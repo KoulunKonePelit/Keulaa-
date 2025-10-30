@@ -1,73 +1,393 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mopedi Keulit — valmis selainpeli</title>
+  <style>
+    :root{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;}
+    body{margin:0;background:linear-gradient(#071024,#031022);color:#e6eef8;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    #wrap{width:1000px;max-width:96vw;padding:18px}
+    .card{background:linear-gradient(180deg,#031425,#071827);border-radius:12px;padding:14px;box-shadow:0 12px 40px rgba(2,6,23,0.6)}
+    header{display:flex;justify-content:space-between;align-items:center}
+    h1{margin:0;font-size:20px}
+    .controls{display:flex;gap:10px;align-items:center}
+    .btn{background:#06b6d4;border:none;padding:8px 12px;border-radius:8px;color:#022c2f;font-weight:700;cursor:pointer}
+    canvas{display:block;border-radius:10px;width:100%;height:520px;background:linear-gradient(#4fb2ff10,#00000040)}
+    .muted{color:#93b0c4;font-size:13px}
+    #mopedSelect{display:flex;gap:8px;margin-top:10px}
+    .mopedCard{background:#021427;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);flex:1;cursor:pointer}
+    .mopedCard.selected{outline:3px solid rgba(99,102,241,0.12)}
+    .tunePanel{display:flex;gap:12px;margin-top:12px}
+    .tune{background:#021427;padding:10px;border-radius:8px;flex:1}
+    label{display:block;font-size:13px;margin-bottom:6px}
+    input[type=range]{width:100%}
+    .touch{display:none;margin-top:12px;gap:8px}
+    .touch .tbtn{flex:1;padding:12px;border-radius:8px;background:#022430;text-align:center}
+    @media (max-width:820px){.touch{display:flex}; #mopedSelect{flex-direction:column}}
+    .small{font-size:13px;color:#93b0c4}
+    .row{display:flex;gap:8px}
+    .col{flex:1}
+    .help{margin-top:10px;color:#bcd6ea;font-size:13px}
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div class="card">
+      <header>
+        <h1>Mopedi Keulit — Tuunaa, keuli & kerää pisteitä</h1>
+        <div class="controls">
+          <div class="small">Pisteet: <strong id="score">0</strong></div>
+          <button id="restart" class="btn">Aloita / Uudelleen</button>
+        </div>
+      </header>
 
+      <canvas id="game" width="960" height="520" aria-label="Mopo keula peli"></canvas>
 
+      <div id="mopedSelect">
+        <!-- JS populates moped cards -->
+      </div>
 
+      <div class="tunePanel">
+        <div class="tune">
+          <label>Mopon väri</label>
+          <input id="colorPicker" type="color" value="#06b6d4">
+          <label style="margin-top:8px">Pakoputki (ääniprofiili)</label>
+          <select id="exhaustSelect">
+            <option value="stock">Stock (hiljainen)</option>
+            <option value="sport">Sport (kova)</option>
+            <option value="racing">Racing (kova, korkea)</option>
+          </select>
+        </div>
+        <div class="tune">
+          <label>Tehopäivitys (vaikuttaa wheelie-multiplik.)</label>
+          <input id="powerRange" type="range" min="0" max="3" step="1" value="0">
+          <div class="small">Taso: <span id="powerLevel">0</span></div>
+          <label style="margin-top:8px">Vakauspäivitys</label>
+          <input id="stabilityRange" type="range" min="0" max="3" step="1" value="0">
+          <div class="small">Taso: <span id="stabLevel">0</span></div>
+        </div>
+        <div class="tune">
+          <label>Lisää oma ääni (valinnainen)</label>
+          <input id="fileInput" type="file" accept="audio/*">
+          <div class="small" style="margin-top:8px">Voit ladata .mp3/.wav tiedoston joka korvaa mopon äänen pelin aikana.</div>
+          <div style="margin-top:10px">
+            <button id="saveTune" class="btn">Tallenna tuunaukset</button>
+            <button id="loadTune" class="btn" style="background:#9ca3ff">Palauta tallennetut</button>
+          </div>
+        </div>
+      </div>
 
-  
-  
-  
-  
+      <div class="touch" id="touchControls">
+        <div class="tbtn" id="leftBtn">◀</div>
+        <div class="tbtn" id="wheelieBtn">KEULI</div>
+        <div class="tbtn" id="rightBtn">▶</div>
+      </div>
 
+      <div class="help">
+        Ohjeet: Valitse mopedi (nimi näkyy vasemmassa yläkulmassa), säädä väri/putki/teho. Käytä ← → tai A/D liikkumiseen. Pidä ↑ / W tai välilyöntiä keulataksesi. Tasapainoa säädetään A/D. Äänet saattavat vaatia, että painat ensin Aloita (selaimet estävät äänen ilman käyttäjän kosketusta).
+      </div>
 
-  
-
-    
-
-      
-        
-Mopedi Keulit — Tuunattavat mopot & äänet
-
-        
-
-          
-Pisteet: 0
-
-          Aloita / Uudelleen
-        
-
-      
-
-  <canvas id="game" width="960" height="520" aria-label="Mopo keula peli"></canvas>
-
-  <div id="mopedSelect">
-    <!-- JS populates moped cards -->
+      <footer style="margin-top:12px" class="small">Tallennus: paras tulos ja tuunaukset tallennetaan paikallisesti selaimeesi.</footer>
+    </div>
   </div>
 
-  <div class="tunePanel">
-    <div class="tune">
-      <label>Mopo väri</label>
-      <input id="colorPicker" type="color" value="#06b6d4">
-      <label style="margin-top:8px">Pakoputki (ääniprofiili)</label>
-      <select id="exhaustSelect">
-        <option value="stock">Stock (hiljainen)</option>
-        <option value="sport">Sport (kova)</option>
-        <option value="racing">Racing (kova, korkea)</option>
-      </select>
-    </div>
-    <div class="tune">
-      <label>Tehopäivitys (vaikuttaa wheelie-multiplik.)</label>
-      <input id="powerRange" type="range" min="0" max="3" step="1" value="0">
-      <label style="margin-top:8px">Vakauspäivitys (vaikuttaa helpompaan tasapainoon)</label>
-      <input id="stabilityRange" type="range" min="0" max="3" step="1" value="0">
-    </div>
-    <div class="tune">
-      <label>Lisää oma ääni (valinnainen)</label>
-      <input id="fileInput" type="file" accept="audio/*">
-      <div class="small" style="margin-top:8px">Voit ladata .mp3/.wav tiedoston joka korvaa mopon äänen testatessa selaimessa.</div>
-    </div>
-  </div>
+<script>
+/* Mopedi Keulit — valmis peli tiedostona
+   Kopioi tämä tiedosto sellaisenaan index.html -tiedostoksi.
+   Jos haluat oikeat mopojen äänet, lisää ne hakemistoon `assets/derbi.mp3` jne.
+   Ohjeet alhaalla.
+*/
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const scoreEl = document.getElementById('score');
+  const restartBtn = document.getElementById('restart');
+  const mopedSelectEl = document.getElementById('mopedSelect');
+  const colorPicker = document.getElementById('colorPicker');
+  const exhaustSelect = document.getElementById('exhaustSelect');
+  const powerRange = document.getElementById('powerRange');
+  const stabilityRange = document.getElementById('stabilityRange');
+  const powerLevel = document.getElementById('powerLevel');
+  const stabLevel = document.getElementById('stabLevel');
+  const fileInput = document.getElementById('fileInput');
+  const saveTuneBtn = document.getElementById('saveTune');
+  const loadTuneBtn = document.getElementById('loadTune');
 
-  <div class="touch" id="touchControls">
-    <div class="tbtn" id="leftBtn">◀</div>
-    <div class="tbtn" id="wheelieBtn">KEULI</div>
-    <div class="tbtn" id="rightBtn">▶</div>
-  </div>
+  // Mopedit (nimi, perusstatit)
+  const mopeds = [
+    {id:'derbi', name:'Derbi Senda', color:'#06b6d4', speed:3.6, stability:0.82, wheelieMult:1.05, audio:'assets/derbi.mp3'},
+    {id:'yamaha', name:'Yamaha DT', color:'#60a5fa', speed:4.2, stability:0.75, wheelieMult:1.25, audio:'assets/yamaha.mp3'},
+    {id:'aprilia', name:'Aprilia SX', color:'#ef4444', speed:4.8, stability:0.68, wheelieMult:1.4, audio:'assets/aprilia.mp3'},
+    {id:'beta', name:'Beta RR', color:'#f97316', speed:3.9, stability:0.9, wheelieMult:0.95, audio:'assets/beta.mp3'}
+  ];
 
-  <footer style="margin-top:12px" class="small">Valitse mopedi ja tuunaa se. Pidä keula ja tasapainoile saadaksesi pisteitä. Voit ladata oman äänen tai käyttää simuloitua moottoriääntä.</footer>
-</div>
+  // load saved tuning (if exists)
+  const savedTuning = JSON.parse(localStorage.getItem('mopedTune') || 'null');
+  if(savedTuning) {
+    powerRange.value = savedTuning.power || 0;
+    stabilityRange.value = savedTuning.stability || 0;
+    colorPicker.value = savedTuning.color || colorPicker.value;
+    exhaustSelect.value = savedTuning.exhaust || 'stock';
+  }
 
+  let selectedIndex = 0;
+  let selectedMoped = mopeds[selectedIndex];
 
-  
+  // tuning modifiers
+  let powerUpgrade = parseInt(powerRange.value);
+  let stabilityUpgrade = parseInt(stabilityRange.value);
+  powerLevel.textContent = powerUpgrade;
+  stabLevel.textContent = stabilityUpgrade;
 
+  // audio
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = AudioCtx ? new AudioCtx() : null;
+  let customAudioBuffer = null;
+  let customSource = null;
+  let synthOsc = null, synthGain=null, synthFilter=null;
+  let synthStarted = false;
 
+  function startSynth(){
+    if(!audioCtx || synthStarted) return;
+    synthOsc = audioCtx.createOscillator();
+    synthGain = audioCtx.createGain();
+    synthFilter = audioCtx.createBiquadFilter();
+    synthOsc.type = 'sawtooth';
+    synthFilter.type = 'lowpass';
+    synthFilter.frequency.value = 800;
+    synthGain.gain.value = 0;
+    synthOsc.connect(synthFilter); synthFilter.connect(synthGain); synthGain.connect(audioCtx.destination);
+    synthOsc.start();
+    synthStarted = true;
+  }
+  function stopSynth(){
+    if(!synthStarted) return;
+    try{ synthOsc.stop(); }catch(e){}
+    synthOsc.disconnect(); synthFilter.disconnect(); synthGain.disconnect();
+    synthOsc = synthFilter = synthGain = null; synthStarted = false;
+  }
 
+  function playCustomLoop(buffer, throttle){
+    if(!audioCtx) return;
+    if(customSource){
+      try{ customSource.stop(); }catch(e){}
+      customSource.disconnect();
+      customSource = null;
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    const g = audioCtx.createGain();
+    g.gain.value = throttle * 0.8;
+    src.connect(g); g.connect(audioCtx.destination);
+    src.playbackRate.value = 0.8 + throttle * 1.2;
+    src._gainNode = g;
+    src.start();
+    customSource = src;
+  }
 
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f || !audioCtx) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      audioCtx.decodeAudioData(ev.target.result, buffer => {
+        customAudioBuffer = buffer;
+        if(customSource){
+          try{ customSource.stop(); }catch(e){}
+          customSource = null;
+        }
+        alert('Mukautettu ääni ladattu. Aloita peli niin ääni soi.');
+      }, err => { console.error(err); alert('Äänitiedoston dekoodaus epäonnistui.'); });
+    };
+    r.readAsArrayBuffer(f);
+  });
+
+  // Build moped UI
+  function buildMopeds(){
+    mopedSelectEl.innerHTML = '';
+    mopeds.forEach((m,i) => {
+      const d = document.createElement('div');
+      d.className = 'mopedCard' + (i===selectedIndex? ' selected':'');
+      d.innerHTML = `<strong>${m.name}</strong><div class="small">Nopeus ${m.speed}, vakaus ${Math.round(m.stability*100)}%</div>`;
+      d.addEventListener('click', ()=>{ selectedIndex = i; selectedMoped = mopeds[selectedIndex]; colorPicker.value = selectedMoped.color; buildMopeds(); });
+      mopedSelectEl.appendChild(d);
+    });
+  }
+  buildMopeds();
+
+  // Save/Load tuning
+  saveTuneBtn.addEventListener('click', ()=>{
+    const tune = {power: parseInt(powerRange.value), stability: parseInt(stabilityRange.value), color: colorPicker.value, exhaust: exhaustSelect.value};
+    localStorage.setItem('mopedTune', JSON.stringify(tune));
+    alert('Tuunaukset tallennettu paikallisesti.');
+  });
+  loadTuneBtn.addEventListener('click', ()=>{
+    const tune = JSON.parse(localStorage.getItem('mopedTune') || 'null');
+    if(!tune){ alert('Ei tallennettuja tuunauksia.'); return; }
+    powerRange.value = tune.power; stabilityRange.value = tune.stability; colorPicker.value = tune.color; exhaustSelect.value = tune.exhaust;
+    powerUpgrade = parseInt(powerRange.value); stabilityUpgrade = parseInt(stabilityRange.value);
+    powerLevel.textContent = powerUpgrade; stabLevel.textContent = stabilityUpgrade;
+    alert('Tuunaukset palautettu.');
+  });
+
+  // Player and world
+  const player = {x:140, y:H-110, w:100, h:36, vx:0, angle:0, wheelie:false, wheelieTime:0};
+  let cameraX = 0, score = 0, best = parseInt(localStorage.getItem('mopedBest')||'0'), running=false;
+  const ramps = [];
+  function genRamps(){ ramps.length=0; let x=0; while(x<6000){ if(Math.random()<0.12){ const rw=80+Math.random()*120; const rh=20+Math.random()*80; ramps.push({x, w:rw, h:rh}); x+=rw+60+Math.random()*120; } else x+=120+Math.random()*200; } }
+  genRamps();
+
+  // input
+  const keys = {};
+  window.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()]=true; if(!running && (e.key==='ArrowUp'||e.key===' '||e.key==='w')) startGame(); });
+  window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+
+  // touch
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+  const wheelieBtn = document.getElementById('wheelieBtn');
+  if(leftBtn){ leftBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['a']=true; }); leftBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['a']=false; }); }
+  if(rightBtn){ rightBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['d']=true; }); rightBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['d']=false; }); }
+  if(wheelieBtn){ wheelieBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['arrowup']=true; }); wheelieBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['arrowup']=false; }); }
+
+  // tuning input
+  colorPicker.addEventListener('input', ()=>{ selectedMoped.color = colorPicker.value; buildMopeds(); });
+  powerRange.addEventListener('input', ()=>{ powerUpgrade = parseInt(powerRange.value); powerLevel.textContent = powerUpgrade; });
+  stabilityRange.addEventListener('input', ()=>{ stabilityUpgrade = parseInt(stabilityRange.value); stabLevel.textContent = stabilityUpgrade; });
+
+  // helpers
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+  // start/reset
+  function startGame(){
+    // unlock audio on some browsers: resume audio context on user gesture
+    if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    cameraX=0; score=0; player.x=140; player.y=H-110; player.vx=0; player.angle=0; player.wheelie=false; player.wheelieTime=0; running=true; genRamps(); loop(performance.now());
+  }
+  restartBtn.addEventListener('click', ()=> startGame());
+
+  // sound update
+  function updateSound(throttle){
+    if(!audioCtx) return;
+    // prefer customAudioBuffer
+    if(customAudioBuffer){
+      playCustomLoop(customAudioBuffer, throttle);
+      return;
+    }
+    // else synth
+    startSynth();
+    const base = 90 + throttle*300;
+    const cutoff = 400 + throttle*1800;
+    synthOsc.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.02);
+    synthFilter.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.05);
+    synthGain.gain.setTargetAtTime(0.01 + throttle*0.12, audioCtx.currentTime, 0.02);
+  }
+
+  // main loop
+  let last=0;
+  function loop(ts){
+    if(!running) return;
+    if(!last) last=ts; const dt = Math.min(40, ts-last); last = ts; const secs = dt/1000;
+
+    selectedMoped = mopeds[selectedIndex];
+    const tunedWheelieMult = selectedMoped.wheelieMult + powerUpgrade*0.25;
+    const tunedStability = clamp(selectedMoped.stability + stabilityUpgrade*0.06, 0.2, 1.3);
+    const tunedColor = colorPicker.value || selectedMoped.color;
+
+    const left = keys['arrowleft'] || keys['a'];
+    const right = keys['arrowright'] || keys['d'];
+    const up = keys['arrowup'] || keys['w'] || keys[' '];
+
+    let intended = 0; if(left) intended = -1; else if(right) intended = 1;
+    player.vx += (intended * selectedMoped.speed - player.vx) * 0.12;
+    player.x += player.vx * (dt/16);
+    player.x = clamp(player.x, 80, W - 220);
+
+    if(up && player.vx > 0.6){
+      if(!player.wheelie){ player.wheelie = true; player.wheelieTime = 0; }
+      player.wheelieTime += secs;
+      const control = ((keys['d']||keys['arrowright'])? 0.016 : 0) + ((keys['a']||keys['arrowleft'])? -0.016 : 0);
+      const drift = (1 - tunedStability) * 0.08;
+      player.angle += (control - drift) * (dt/16);
+      player.angle = clamp(player.angle, -1.4, 1.4);
+      const angleFactor = Math.max(0, 1 - Math.abs(player.angle) / 0.9);
+      const exhaust = exhaustSelect.value;
+      const exhaustMul = exhaust === 'stock' ? 0.9 : (exhaust === 'sport' ? 1.05 : 1.15);
+      const pts = angleFactor * tunedWheelieMult * exhaustMul * secs * 25;
+      score += pts;
+    } else {
+      player.wheelie = false;
+      player.angle *= 0.8;
+    }
+
+    cameraX += player.vx * (dt/16);
+    if(cameraX > 5000) cameraX = 0;
+
+    const throttle = clamp(Math.abs(player.vx)/6, 0, 1);
+    updateSound(throttle * (1 + powerUpgrade*0.12));
+
+    scoreEl.textContent = Math.floor(score);
+
+    if(Math.abs(player.angle) > 1.15){
+      running=false;
+      stopSynth();
+      if(customSource){ try{ customSource.stop(); }catch(e){} customSource=null; }
+      if(score > best){ best = Math.floor(score); localStorage.setItem('mopedBest', best); }
+      setTimeout(()=>{ ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.font='24px system-ui'; ctx.textAlign='center'; ctx.fillText('Kaatui! Pisteet: '+Math.floor(score), W/2, H/2 - 8); ctx.font='16px system-ui'; ctx.fillText('Tallenna tuunaukset tai paina Aloita', W/2, H/2 + 20); },200);
+      return;
+    }
+
+    // render
+    ctx.clearRect(0,0,W,H);
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#4fb2ff'); g.addColorStop(0.7,'#9bd1ff'); g.addColorStop(1,'#fff'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#06202b'; ctx.fillRect(0,H-80,W,80);
+
+    ctx.save(); ctx.translate(-cameraX%W,0);
+    for(let i=-1;i<6;i++){
+      ctx.fillStyle='rgba(7,36,45,0.9)'; ctx.beginPath(); ctx.ellipse(i*W+200, H-40, 220, 80, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(i*W+640, H-40, 240, 90, 0, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    for(const r of ramps){ const rx = r.x - cameraX; if(rx + r.w < -200 || rx > W+200) continue; ctx.fillStyle='#2b5563'; ctx.fillRect(rx, H-80 - r.h, r.w, r.h); }
+
+    const px = player.x; const py = player.y;
+    ctx.fillStyle='rgba(0,0,0,0.24)'; ctx.beginPath(); ctx.ellipse(px+44, H-40, 46, 12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.save(); ctx.translate(px+44, py+12); ctx.rotate(player.angle*0.6);
+    ctx.fillStyle = colorPicker.value || selectedMoped.color; ctx.fillRect(-44, -12, 88, 22);
+    ctx.fillStyle='#072c33'; ctx.fillRect(-10, -20, 30, 10);
+    ctx.fillStyle='#06202a'; ctx.beginPath(); ctx.arc(-28, 14, 14, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(28, 14, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = exhaustSelect.value === 'racing' ? '#fed7aa' : (exhaustSelect.value === 'sport' ? '#fca5a5' : '#cbd5e1');
+    ctx.fillRect(30, -6, 18, 6);
+    ctx.restore();
+
+    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(10,10,300,80);
+    ctx.fillStyle='#fff'; ctx.font='16px system-ui'; ctx.textAlign='left'; ctx.fillText(selectedMoped.name, 18, 36); ctx.font='14px system-ui'; ctx.fillText('Paras: '+best, 18, 60);
+
+    requestAnimationFrame(loop);
+  }
+
+  // initial draw and UI wiring
+  ctx.fillStyle='#071025'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.font='18px system-ui'; ctx.textAlign='center'; ctx.fillText('Valitse mopedi, tuunaa väri/putki ja paina Aloita', W/2, H/2 - 6);
+  buildMopeds();
+
+  // expose moped list click behavior: rebuild UI when selectedIndex changes via buildMopeds
+  // ensure selectedIndex reactive when user clicks: already wired in buildMopeds
+
+  // Save current tuning to localStorage automatically when changed
+  function autoSaveTune(){
+    const tune = {power: parseInt(powerRange.value), stability: parseInt(stabilityRange.value), color: colorPicker.value, exhaust: exhaustSelect.value};
+    localStorage.setItem('mopedTune', JSON.stringify(tune));
+  }
+  powerRange.addEventListener('change', autoSaveTune);
+  stabilityRange.addEventListener('change', autoSaveTune);
+  colorPicker.addEventListener('change', autoSaveTune);
+  exhaustSelect.addEventListener('change', autoSaveTune);
+
+})();
+</script>
+</body>
+</html>
