@@ -1,0 +1,73 @@
+
+
+
+
+  
+  
+  
+  
+
+
+  
+
+    
+
+      
+        
+Mopedi Keulit — Tuunattavat mopot & äänet
+
+        
+
+          
+Pisteet: 0
+
+          Aloita / Uudelleen
+        
+
+      
+
+  <canvas id="game" width="960" height="520" aria-label="Mopo keula peli"></canvas>
+
+  <div id="mopedSelect">
+    <!-- JS populates moped cards -->
+  </div>
+
+  <div class="tunePanel">
+    <div class="tune">
+      <label>Mopo väri</label>
+      <input id="colorPicker" type="color" value="#06b6d4">
+      <label style="margin-top:8px">Pakoputki (ääniprofiili)</label>
+      <select id="exhaustSelect">
+        <option value="stock">Stock (hiljainen)</option>
+        <option value="sport">Sport (kova)</option>
+        <option value="racing">Racing (kova, korkea)</option>
+      </select>
+    </div>
+    <div class="tune">
+      <label>Tehopäivitys (vaikuttaa wheelie-multiplik.)</label>
+      <input id="powerRange" type="range" min="0" max="3" step="1" value="0">
+      <label style="margin-top:8px">Vakauspäivitys (vaikuttaa helpompaan tasapainoon)</label>
+      <input id="stabilityRange" type="range" min="0" max="3" step="1" value="0">
+    </div>
+    <div class="tune">
+      <label>Lisää oma ääni (valinnainen)</label>
+      <input id="fileInput" type="file" accept="audio/*">
+      <div class="small" style="margin-top:8px">Voit ladata .mp3/.wav tiedoston joka korvaa mopon äänen testatessa selaimessa.</div>
+    </div>
+  </div>
+
+  <div class="touch" id="touchControls">
+    <div class="tbtn" id="leftBtn">◀</div>
+    <div class="tbtn" id="wheelieBtn">KEULI</div>
+    <div class="tbtn" id="rightBtn">▶</div>
+  </div>
+
+  <footer style="margin-top:12px" class="small">Valitse mopedi ja tuunaa se. Pidä keula ja tasapainoile saadaksesi pisteitä. Voit ladata oman äänen tai käyttää simuloitua moottoriääntä.</footer>
+</div>
+
+
+  
+
+
+
+
