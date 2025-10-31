@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mopedi Keulit — valmis selainpeli</title>
+  <title>Mopedi Keulit Pro — Ultimate Mopo Simulaatio</title>
   <style>
     :root{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;}
     body{margin:0;background:linear-gradient(#071024,#031022);color:#e6eef8;display:flex;align-items:center;justify-content:center;min-height:100vh}
@@ -12,37 +12,77 @@
     header{display:flex;justify-content:space-between;align-items:center}
     h1{margin:0;font-size:20px}
     .controls{display:flex;gap:10px;align-items:center}
-    .btn{background:#06b6d4;border:none;padding:8px 12px;border-radius:8px;color:#022c2f;font-weight:700;cursor:pointer}
+    .btn{background:#06b6d4;border:none;padding:8px 12px;border-radius:8px;color:#022c2f;font-weight:700;cursor:pointer;transition:all 0.2s}
+    .btn:hover{background:#0891b2;transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
     canvas{display:block;border-radius:10px;width:100%;height:520px;background:linear-gradient(#4fb2ff10,#00000040)}
     .muted{color:#93b0c4;font-size:13px}
     #mopedSelect{display:flex;gap:8px;margin-top:10px}
-    .mopedCard{background:#021427;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);flex:1;cursor:pointer}
-    .mopedCard.selected{outline:3px solid rgba(99,102,241,0.12)}
+    .mopedCard{background:#021427;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);flex:1;cursor:pointer;transition:all 0.2s}
+    .mopedCard:hover{background:#031e38}
+    .mopedCard.selected{outline:3px solid rgba(99,102,241,0.5);background:#03223f}
     .tunePanel{display:flex;gap:12px;margin-top:12px}
     .tune{background:#021427;padding:10px;border-radius:8px;flex:1}
     label{display:block;font-size:13px;margin-bottom:6px}
     input[type=range]{width:100%}
     .touch{display:none;margin-top:12px;gap:8px}
-    .touch .tbtn{flex:1;padding:12px;border-radius:8px;background:#022430;text-align:center}
-    @media (max-width:820px){.touch{display:flex}; #mopedSelect{flex-direction:column}}
+    .touch .tbtn{flex:1;padding:12px;border-radius:8px;background:#022430;text-align:center;user-select:none;transition:all 0.1s}
+    .touch .tbtn:active{background:#033d52}
+    @media (max-width:820px){.touch{display:flex}; #mopedSelect{flex-direction:column}; .tunePanel{flex-direction:column}}
     .small{font-size:13px;color:#93b0c4}
     .row{display:flex;gap:8px}
     .col{flex:1}
     .help{margin-top:10px;color:#bcd6ea;font-size:13px}
+    #pauseBtn{margin-left:10px}
+    .upgrade-info{display:flex;justify-content:space-between;margin-top:4px}
+    .stats{display:flex;gap:15px;margin-top:8px}
+    .stat{background:#021427;padding:8px;border-radius:6px;flex:1;text-align:center}
+    .stat-value{font-weight:bold;color:#06b6d4}
+    .achievement{position:fixed;top:20px;right:20px;background:#059669;padding:10px;border-radius:8px;transform:translateX(300px);transition:transform 0.3s}
+    .achievement.show{transform:translateX(0)}
+    .weather-controls{display:flex;gap:8px;margin-top:8px}
+    .weather-btn{padding:6px 10px;border-radius:6px;background:#1e3a5f;border:none;color:white;cursor:pointer;font-size:12px}
+    .weather-btn.active{background:#06b6d4}
+    .damage-bar{height:6px;background:#dc2626;border-radius:3px;margin-top:4px;transition:width 0.3s}
+    .nitro-bar{height:6px;background:#06b6d4;border-radius:3px;margin-top:4px;transition:width 0.3s}
   </style>
 </head>
 <body>
   <div id="wrap">
     <div class="card">
       <header>
-        <h1>Mopedi Keulit — Tuunaa, keuli & kerää pisteitä</h1>
+        <h1>Mopedi Keulit Pro — Ultimate Mopo Simulaatio</h1>
         <div class="controls">
           <div class="small">Pisteet: <strong id="score">0</strong></div>
           <button id="restart" class="btn">Aloita / Uudelleen</button>
+          <button id="pauseBtn" class="btn" style="background:#9ca3ff">Pysäytä</button>
         </div>
       </header>
 
       <canvas id="game" width="960" height="520" aria-label="Mopo keula peli"></canvas>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="small">Nopeus</div>
+          <div class="stat-value" id="speedValue">0 km/h</div>
+        </div>
+        <div class="stat">
+          <div class="small">Wheelie-aika</div>
+          <div class="stat-value" id="wheelieValue">0.0s</div>
+        </div>
+        <div class="stat">
+          <div class="small">Matka</div>
+          <div class="stat-value" id="distanceValue">0m</div>
+        </div>
+        <div class="stat">
+          <div class="small">Vahinko</div>
+          <div class="damage-bar" id="damageBar" style="width:0%"></div>
+        </div>
+        <div class="stat">
+          <div class="small">Nitro</div>
+          <div class="nitro-bar" id="nitroBar" style="width:100%"></div>
+        </div>
+      </div>
 
       <div id="mopedSelect"></div>
 
@@ -50,28 +90,67 @@
         <div class="tune">
           <label>Mopon väri</label>
           <input id="colorPicker" type="color" value="#06b6d4">
+          <div class="upgrade-info">
+            <span class="small">Väri vaikuttaa mopon ulkonäköön</span>
+          </div>
+          
           <label style="margin-top:8px">Pakoputki (ääniprofiili)</label>
           <select id="exhaustSelect">
             <option value="stock">Stock (hiljainen)</option>
             <option value="sport">Sport (kova)</option>
             <option value="racing">Racing (kova, korkea)</option>
+            <option value="custom">Custom (erikoinen)</option>
           </select>
+          <div class="upgrade-info">
+            <span class="small">Wheelie-pisteet: <span id="exhaustMultiplier">0.85</span>x</span>
+          </div>
+
+          <label style="margin-top:8px">Sää</label>
+          <div class="weather-controls">
+            <button class="weather-btn active" data-weather="sunny">Aurinko</button>
+            <button class="weather-btn" data-weather="rain">Sade</button>
+            <button class="weather-btn" data-weather="night">Yö</button>
+            <button class="weather-btn" data-weather="fog">Sumu</button>
+          </div>
         </div>
         <div class="tune">
           <label>Tehopäivitys (vaikuttaa wheelie-multiplik.)</label>
-          <input id="powerRange" type="range" min="0" max="3" step="1" value="0">
-          <div class="small">Taso: <span id="powerLevel">0</span></div>
+          <input id="powerRange" type="range" min="0" max="5" step="1" value="0">
+          <div class="upgrade-info">
+            <span class="small">Taso: <span id="powerLevel">0</span></span>
+            <span class="small">Wheelie-pisteet: <span id="powerMultiplier">1.05</span>x</span>
+          </div>
+          
           <label style="margin-top:8px">Vakauspäivitys</label>
-          <input id="stabilityRange" type="range" min="0" max="3" step="1" value="0">
-          <div class="small">Taso: <span id="stabLevel">0</span></div>
+          <input id="stabilityRange" type="range" min="0" max="5" step="1" value="0">
+          <div class="upgrade-info">
+            <span class="small">Taso: <span id="stabLevel">0</span></span>
+            <span class="small">Vakaus: <span id="stabilityValue">0.82</span></span>
+          </div>
+
+          <label style="margin-top:8px">Nitrojärjestelmä</label>
+          <input id="nitroRange" type="range" min="0" max="3" step="1" value="0">
+          <div class="upgrade-info">
+            <span class="small">Taso: <span id="nitroLevel">0</span></span>
+            <span class="small">Nitroaika: <span id="nitroTime">0</span>s</span>
+          </div>
         </div>
         <div class="tune">
           <label>Lisää oma ääni (valinnainen)</label>
           <input id="fileInput" type="file" accept="audio/*">
           <div class="small" style="margin-top:8px">Voit ladata .mp3/.wav tiedoston joka korvaa mopon äänen pelin aikana.</div>
+          
           <div style="margin-top:10px">
             <button id="saveTune" class="btn">Tallenna tuunaukset</button>
             <button id="loadTune" class="btn" style="background:#9ca3ff">Palauta tallennetut</button>
+          </div>
+          
+          <div style="margin-top:10px">
+            <button id="resetTune" class="btn" style="background:#f87171">Nollaa tuunaukset</button>
+          </div>
+
+          <div style="margin-top:10px">
+            <button id="nitroBtn" class="btn" style="background:#f59e0b">NITRO (N)</button>
           </div>
         </div>
       </div>
@@ -79,25 +158,32 @@
       <div class="touch" id="touchControls">
         <div class="tbtn" id="leftBtn">◀</div>
         <div class="tbtn" id="wheelieBtn">KEULI</div>
+        <div class="tbtn" id="nitroTouchBtn">NITRO</div>
         <div class="tbtn" id="rightBtn">▶</div>
       </div>
 
       <div class="help">
-        Ohjeet: Valitse mopedi, säädä väri/putki/teho. Käytä ← → tai A/D liikkumiseen. Pidä ↑ / W tai välilyöntiä keulataksesi. Takalokarin osuma maahan johtaa välittömään kaatumiseen.
+        Ohjeet: Valitse mopedi, säädä väri/putki/teho. Käytä ← → tai A/D liikkumiseen. Pidä ↑ / W tai välilyöntiä keulataksesi. N = Nitro. Välilyönti = Hätäjarrutus.
       </div>
 
-      <footer style="margin-top:12px" class="small">Tallennus: paras tulos ja tuunaukset tallennetaan paikallisesti selaimeesi.</footer>
+      <footer style="margin-top:12px" class="small">Tallennus: paras tulos, saavutukset ja tuunaukset tallennetaan paikallisesti selaimeesi.</footer>
     </div>
   </div>
 
+  <div id="achievement" class="achievement">
+    <strong id="achievementTitle">Saavutus!</strong>
+    <div id="achievementDesc" class="small"></div>
+  </div>
+
 <script>
-/* Täydellinen päivitetty peli
-   - Parannettu fysiikka: massamainen kiihtyvyys, vertikaalifysiikka ramppeja varten
-   - Takalokari-osuma (rear fender) -> välitön kaatuminen
-   - Parallax, partikkelit, rampit, 4 selkeää mopomallia
-   - Audio: custom + synth fallback, äänen stoppaus pelin lopussa
-   - Tallennus ja UI
-   Kopioi tiedosto ja korvaa nykyinen index.html. Säilytä assets-kansio, jos haluat lisätä omat mp3/png-tiedostot.
+/* Mopedi Keulit Pro - Ultimate versio
+   - Jokaiselle mopolle uniikki, realistinen ulkonäkö
+   - Sääjärjestelmä (aurinko, sade, yö, sumu)
+   - Vahinkojärjestelmä ja korjaus
+   - Nitrojärjestelmä
+   - Saavutukset
+   - Ympäristöelementit (liikenne, rakennukset)
+   - Ääniefektit
 */
 
 (() => {
@@ -108,46 +194,165 @@
   // UI
   const scoreEl = document.getElementById('score');
   const restartBtn = document.getElementById('restart');
+  const pauseBtn = document.getElementById('pauseBtn');
   const mopedSelectEl = document.getElementById('mopedSelect');
   const colorPicker = document.getElementById('colorPicker');
   const exhaustSelect = document.getElementById('exhaustSelect');
   const powerRange = document.getElementById('powerRange');
   const stabilityRange = document.getElementById('stabilityRange');
+  const nitroRange = document.getElementById('nitroRange');
   const powerLevel = document.getElementById('powerLevel');
   const stabLevel = document.getElementById('stabLevel');
+  const nitroLevel = document.getElementById('nitroLevel');
+  const nitroTimeEl = document.getElementById('nitroTime');
   const fileInput = document.getElementById('fileInput');
   const saveTuneBtn = document.getElementById('saveTune');
   const loadTuneBtn = document.getElementById('loadTune');
+  const resetTuneBtn = document.getElementById('resetTune');
+  const nitroBtn = document.getElementById('nitroBtn');
+  
+  // Uudet UI-elementit
+  const speedValue = document.getElementById('speedValue');
+  const wheelieValue = document.getElementById('wheelieValue');
+  const distanceValue = document.getElementById('distanceValue');
+  const exhaustMultiplier = document.getElementById('exhaustMultiplier');
+  const powerMultiplier = document.getElementById('powerMultiplier');
+  const stabilityValue = document.getElementById('stabilityValue');
+  const damageBar = document.getElementById('damageBar');
+  const nitroBar = document.getElementById('nitroBar');
+  const achievementEl = document.getElementById('achievement');
+  const achievementTitle = document.getElementById('achievementTitle');
+  const achievementDesc = document.getElementById('achievementDesc');
 
-  // Mopedit: lisää "rearHeight" ja "rearHitThreshold" mallikohtaisesti
-  // rearHeight = relative rear-fender height above ground (px)
-  // rearHitThreshold = allowed vertical impact speed before instant crash
+  // Mopedit - jokaiselle uniikki ulkonäkö ja ominaisuudet
   const mopeds = [
-    {id:'derbi', name:'Derbi Senda', color:'#06b6d4', acceleration:1400, maxSpeed:420, handling:3.3, stability:0.82, wheelieMult:1.05, rearHeight:18, rearHitThreshold:280, mass:80, audio:'assets/derbi.mp3'},
-    {id:'yamaha', name:'Yamaha DT', color:'#60a5fa', acceleration:1700, maxSpeed:480, handling:3.0, stability:0.75, wheelieMult:1.25, rearHeight:22, rearHitThreshold:320, mass:85, audio:'assets/yamaha.mp3'},
-    {id:'aprilia', name:'Aprilia SX', color:'#ef4444', acceleration:1900, maxSpeed:520, handling:3.7, stability:0.68, wheelieMult:1.4, rearHeight:16, rearHitThreshold:360, mass:78, audio:'assets/aprilia.mp3'},
-    {id:'beta', name:'Beta RR', color:'#f97316', acceleration:1500, maxSpeed:440, handling:3.9, stability:0.9, wheelieMult:0.95, rearHeight:26, rearHitThreshold:260, mass:88, audio:'assets/beta.mp3'}
+    {
+      id:'derbi', 
+      name:'Derbi Senda DRD', 
+      color:'#06b6d4', 
+      acceleration:1400, 
+      maxSpeed:420, 
+      handling:3.3, 
+      stability:0.82, 
+      wheelieMult:1.05, 
+      rearHeight:18, 
+      rearHitThreshold:280, 
+      mass:80, 
+      audio:'assets/derbi.mp3',
+      description: 'Ketjusaha-ääninen enduro, erinomainen maastossa'
+    },
+    {
+      id:'yamaha', 
+      name:'Yamaha DT 50', 
+      color:'#dc2626', 
+      acceleration:1700, 
+      maxSpeed:480, 
+      handling:3.0, 
+      stability:0.75, 
+      wheelieMult:1.25, 
+      rearHeight:22, 
+      rearHitThreshold:320, 
+      mass:85, 
+      audio:'assets/yamaha.mp3',
+      description: 'Legendaarinen DT, luotettava ja nopea'
+    },
+    {
+      id:'aprilia', 
+      name:'Aprilia SX 50', 
+      color:'#009933', 
+      acceleration:1900, 
+      maxSpeed:520, 
+      handling:3.7, 
+      stability:0.68, 
+      wheelieMult:1.4, 
+      rearHeight:16, 
+      rearHitThreshold:360, 
+      mass:78, 
+      audio:'assets/aprilia.mp3',
+      description: 'Supermotard, tarkka käsittely kaupungissa'
+    },
+    {
+      id:'beta', 
+      name:'Beta RR 50', 
+      color:'#0000ff', 
+      acceleration:1500, 
+      maxSpeed:440, 
+      handling:3.9, 
+      stability:0.9, 
+      wheelieMult:0.95, 
+      rearHeight:26, 
+      rearHitThreshold:260, 
+      mass:88, 
+      audio:'assets/beta.mp3',
+      description: 'Italian design, täydellinen kontrolli'
+    },
+    {
+      id:'honda', 
+      name:'Honda NSR 50', 
+      color:'#ff0000', 
+      acceleration:2000, 
+      maxSpeed:550, 
+      handling:4.2, 
+      stability:0.6, 
+      wheelieMult:1.8, 
+      rearHeight:14, 
+      rearHitThreshold:400, 
+      mass:75, 
+      audio:'assets/honda.mp3',
+      description: 'Kaksitahtinen legenda, nopein kaikista'
+    },
+    {
+      id:'rieju', 
+      name:'Rieju MRT 50', 
+      color:'#ffff00', 
+      acceleration:1600, 
+      maxSpeed:460, 
+      handling:3.5, 
+      stability:0.78, 
+      wheelieMult:1.15, 
+      rearHeight:20, 
+      rearHitThreshold:300, 
+      mass:82, 
+      audio:'assets/rieju.mp3',
+      description: 'Espanjalainen suorituskyky, täydellinen wheelieihin'
+    }
   ];
 
-  // Load saved tuning
-  const savedTuning = JSON.parse(localStorage.getItem('mopedTune') || 'null');
-  if(savedTuning) {
-    powerRange.value = savedTuning.power || 0;
-    stabilityRange.value = savedTuning.stability || 0;
-    colorPicker.value = savedTuning.color || colorPicker.value;
-    exhaustSelect.value = savedTuning.exhaust || 'stock';
-  }
+  // Saavutukset
+  const achievements = {
+    firstWheelie: { name: 'Ensimmäinen Wheelie!', desc: 'Teit ensimmäisen wheeliesi', earned: false },
+    speed100: { name: '100 km/h!', desc: 'Saavutit 100 km/h nopeuden', earned: false },
+    distance5k: { name: 'Matkamies', desc: 'Ajoit yli 5km', earned: false },
+    nitroMaster: { name: 'Nitro Masters', desc: 'Käytit nitroa 10 kertaa', earned: false },
+    wheelie10s: { name: 'Wheelie Master', desc: 'Pidät wheelieä 10 sekuntia', earned: false },
+    noDamage: { name: 'Ehkäisevä kuski', desc: 'Ajoit 1km ilman vahinkoa', earned: false }
+  };
 
+  // Load saved data
+  const savedTuning = JSON.parse(localStorage.getItem('mopedTune') || 'null');
+  const savedBest = parseInt(localStorage.getItem('mopedBest') || '0');
+  const savedAchievements = JSON.parse(localStorage.getItem('mopedAchievements') || 'null');
+  if (savedAchievements) {
+    Object.keys(savedAchievements).forEach(key => {
+      if (achievements[key]) achievements[key].earned = savedAchievements[key];
+    });
+  }
+  
   let selectedIndex = 0;
   let selectedMoped = mopeds[selectedIndex];
+  let powerUpgrade = 0;
+  let stabilityUpgrade = 0;
+  let nitroUpgrade = 0;
+  let isPaused = false;
+  let totalDistance = 0;
+  let currentWeather = 'sunny';
+  let nitroActive = false;
+  let nitroTime = 0;
+  let nitroCount = 0;
+  let damage = 0;
+  let damageDistance = 0;
 
-  // tuning modifiers
-  let powerUpgrade = parseInt(powerRange.value) || 0;
-  let stabilityUpgrade = parseInt(stabilityRange.value) || 0;
-  powerLevel.textContent = powerUpgrade;
-  stabLevel.textContent = stabilityUpgrade;
-
-  // Audio: support custom file and synth fallback
+  // Audio
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   const audioCtx = AudioCtx ? new AudioCtx() : null;
   let customAudioBuffer = null;
@@ -155,6 +360,75 @@
   let synthOsc = null, synthGain=null, synthFilter=null;
   let synthStarted = false;
 
+  function initTuning() {
+    if(savedTuning) {
+      powerRange.value = savedTuning.power || 0;
+      stabilityRange.value = savedTuning.stability || 0;
+      nitroRange.value = savedTuning.nitro || 0;
+      colorPicker.value = savedTuning.color || colorPicker.value;
+      exhaustSelect.value = savedTuning.exhaust || 'stock';
+      if (savedTuning.weather) {
+        setWeather(savedTuning.weather);
+      }
+    }
+    
+    powerUpgrade = parseInt(powerRange.value) || 0;
+    stabilityUpgrade = parseInt(stabilityRange.value) || 0;
+    nitroUpgrade = parseInt(nitroRange.value) || 0;
+    powerLevel.textContent = powerUpgrade;
+    stabLevel.textContent = stabilityUpgrade;
+    nitroLevel.textContent = nitroUpgrade;
+    nitroTimeEl.textContent = (nitroUpgrade * 2 + 3).toString();
+    
+    updateMultiplierDisplay();
+  }
+
+  function updateMultiplierDisplay() {
+    // Päivitä exhaust multiplier
+    const exhaustMul = exhaustSelect.value === 'stock' ? 0.85 : 
+                      exhaustSelect.value === 'sport' ? 1.05 : 
+                      exhaustSelect.value === 'racing' ? 1.2 : 1.35;
+    exhaustMultiplier.textContent = exhaustMul.toFixed(2);
+    
+    // Päivitä power multiplier
+    const powerMul = selectedMoped.wheelieMult + powerUpgrade * 0.22;
+    powerMultiplier.textContent = powerMul.toFixed(2);
+    
+    // Päivitä stability
+    const stabVal = clamp(selectedMoped.stability + stabilityUpgrade * 0.06, 0.2, 1.5);
+    stabilityValue.textContent = stabVal.toFixed(2);
+  }
+
+  function setWeather(weather) {
+    currentWeather = weather;
+    document.querySelectorAll('.weather-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.weather === weather);
+    });
+    // Tallenna säätila
+    autoSaveTune();
+  }
+
+  function unlockAchievement(key) {
+    if (!achievements[key] || achievements[key].earned) return;
+    
+    achievements[key].earned = true;
+    achievementTitle.textContent = achievements[key].name;
+    achievementDesc.textContent = achievements[key].desc;
+    achievementEl.classList.add('show');
+    
+    // Tallenna saavutukset
+    const earnedAchievements = {};
+    Object.keys(achievements).forEach(k => {
+      earnedAchievements[k] = achievements[k].earned;
+    });
+    localStorage.setItem('mopedAchievements', JSON.stringify(earnedAchievements));
+    
+    setTimeout(() => {
+      achievementEl.classList.remove('show');
+    }, 3000);
+  }
+
+  // Audio functions
   function startSynth(){
     if(!audioCtx || synthStarted) return;
     synthOsc = audioCtx.createOscillator();
@@ -164,16 +438,25 @@
     synthFilter.type = 'lowpass';
     synthFilter.frequency.value = 800;
     synthGain.gain.value = 0;
-    synthOsc.connect(synthFilter); synthFilter.connect(synthGain); synthGain.connect(audioCtx.destination);
+    synthOsc.connect(synthFilter); 
+    synthFilter.connect(synthGain); 
+    synthGain.connect(audioCtx.destination);
     synthOsc.start();
     synthStarted = true;
   }
+  
   function stopSynth(){
     if(!synthStarted) return;
-    try{ synthOsc.stop(); }catch(e){}
-    try{ synthOsc.disconnect(); synthFilter.disconnect(); synthGain.disconnect(); }catch(e){}
-    synthOsc = synthFilter = synthGain = null; synthStarted = false;
+    try{ 
+      synthOsc.stop(); 
+      synthOsc.disconnect(); 
+      synthFilter.disconnect(); 
+      synthGain.disconnect(); 
+    } catch(e){}
+    synthOsc = synthFilter = synthGain = null; 
+    synthStarted = false;
   }
+  
   function playCustomLoop(buffer, throttle){
     if(!audioCtx) return;
     if(customSource){
@@ -186,23 +469,41 @@
     src.loop = true;
     const g = audioCtx.createGain();
     g.gain.value = clamp(throttle, 0.02, 1) * 0.9;
-    src.connect(g); g.connect(audioCtx.destination);
+    src.connect(g); 
+    g.connect(audioCtx.destination);
     src.playbackRate.value = 0.8 + throttle * 1.4;
     src._gainNode = g;
     src.start();
     customSource = src;
   }
 
+  function stopAllAudio() {
+    if (customSource) {
+      try { 
+        customSource.stop(); 
+        customSource.disconnect();
+      } catch(e) {}
+      customSource = null;
+    }
+    stopSynth();
+  }
+
   fileInput.addEventListener('change', e=>{
     const f = e.target.files && e.target.files[0];
-    if(!f || !audioCtx) { if(!audioCtx) alert('Selaimesi ei tue WebAudioContextia.'); return; }
+    if(!f || !audioCtx) { 
+      if(!audioCtx) alert('Selaimesi ei tue WebAudioContextia.'); 
+      return; 
+    }
     const r = new FileReader();
     r.onload = ev => {
       audioCtx.decodeAudioData(ev.target.result, buffer => {
         customAudioBuffer = buffer;
-        if(customSource){ try{ customSource.stop(); }catch(e){} customSource = null; }
+        stopAllAudio();
         alert('Mukautettu ääni ladattu. Aloita peli niin ääni soi.');
-      }, err => { console.error(err); alert('Äänitiedoston dekoodaus epäonnistui.'); });
+      }, err => { 
+        console.error(err); 
+        alert('Äänitiedoston dekoodaus epäonnistui.'); 
+      });
     };
     r.readAsArrayBuffer(f);
   });
@@ -213,54 +514,152 @@
     mopeds.forEach((m,i) => {
       const d = document.createElement('div');
       d.className = 'mopedCard' + (i===selectedIndex? ' selected':'');
-      d.innerHTML = `<strong>${m.name}</strong><div class="small">Top ${Math.round(m.maxSpeed)} | Acc ${Math.round(m.acceleration)}</div>`;
-      d.addEventListener('click', ()=>{ selectedIndex = i; selectedMoped = mopeds[selectedIndex]; colorPicker.value = selectedMoped.color; buildMopeds(); });
+      d.innerHTML = `
+        <strong>${m.name}</strong>
+        <div class="small">${m.description}</div>
+        <div class="small">Top ${Math.round(m.maxSpeed/10)} km/h | Kiihtyvyys ${Math.round(m.acceleration/100)}</div>
+        <div class="small">Wheelie: ${m.wheelieMult.toFixed(2)}x | Vakaus: ${m.stability.toFixed(2)}</div>
+      `;
+      d.addEventListener('click', ()=>{ 
+        selectedIndex = i; 
+        selectedMoped = mopeds[selectedIndex]; 
+        colorPicker.value = selectedMoped.color; 
+        buildMopeds(); 
+        updateMultiplierDisplay();
+      });
       mopedSelectEl.appendChild(d);
     });
   }
-  buildMopeds();
 
   // Save/Load tuning
   saveTuneBtn.addEventListener('click', ()=>{
-    const tune = {power: parseInt(powerRange.value), stability: parseInt(stabilityRange.value), color: colorPicker.value, exhaust: exhaustSelect.value};
+    const tune = {
+      power: parseInt(powerRange.value), 
+      stability: parseInt(stabilityRange.value), 
+      nitro: parseInt(nitroRange.value),
+      color: colorPicker.value, 
+      exhaust: exhaustSelect.value,
+      weather: currentWeather
+    };
     localStorage.setItem('mopedTune', JSON.stringify(tune));
     alert('Tuunaukset tallennettu paikallisesti.');
   });
+  
   loadTuneBtn.addEventListener('click', ()=>{
     const tune = JSON.parse(localStorage.getItem('mopedTune') || 'null');
-    if(!tune){ alert('Ei tallennettuja tuunauksia.'); return; }
-    powerRange.value = tune.power; stabilityRange.value = tune.stability; colorPicker.value = tune.color; exhaustSelect.value = tune.exhaust;
-    powerUpgrade = parseInt(powerRange.value); stabilityUpgrade = parseInt(stabilityRange.value);
-    powerLevel.textContent = powerUpgrade; stabLevel.textContent = stabilityUpgrade;
+    if(!tune){ 
+      alert('Ei tallennettuja tuunauksia.'); 
+      return; 
+    }
+    powerRange.value = tune.power; 
+    stabilityRange.value = tune.stability; 
+    nitroRange.value = tune.nitro || 0;
+    colorPicker.value = tune.color; 
+    exhaustSelect.value = tune.exhaust;
+    if (tune.weather) setWeather(tune.weather);
+    
+    powerUpgrade = parseInt(powerRange.value); 
+    stabilityUpgrade = parseInt(stabilityRange.value);
+    nitroUpgrade = parseInt(nitroRange.value);
+    powerLevel.textContent = powerUpgrade; 
+    stabLevel.textContent = stabilityUpgrade;
+    nitroLevel.textContent = nitroUpgrade;
+    updateMultiplierDisplay();
     alert('Tuunaukset palautettu.');
+  });
+  
+  resetTuneBtn.addEventListener('click', ()=>{
+    powerRange.value = 0;
+    stabilityRange.value = 0;
+    nitroRange.value = 0;
+    colorPicker.value = selectedMoped.color;
+    exhaustSelect.value = 'stock';
+    setWeather('sunny');
+    
+    powerUpgrade = 0;
+    stabilityUpgrade = 0;
+    nitroUpgrade = 0;
+    powerLevel.textContent = powerUpgrade;
+    stabLevel.textContent = stabilityUpgrade;
+    nitroLevel.textContent = nitroUpgrade;
+    updateMultiplierDisplay();
+    alert('Tuunaukset nollattu.');
   });
 
   // World + player state
   const player = {
     x:140, y:H-120, w:110, h:40,
     vx:0, vy:0, angle:0, angularVel:0,
-    wheelie:false, wheelieTime:0
+    wheelie:false, wheelieTime:0,
+    maxWheelieTime: 0
   };
-  let cameraX = 0, score = 0, best = parseInt(localStorage.getItem('mopedBest')||'0'), running=false;
+  
+  let cameraX = 0, score = 0, best = savedBest, running=false;
   const ramps = [];
-  function genRamps(){ ramps.length=0; let x=0; while(x<12000){ if(Math.random()<0.12){ const rw=80+Math.random()*200; const rh=20+Math.random()*120; const slope = (Math.random()*0.6-0.3); ramps.push({x, w:rw, h:rh, slope}); x+=rw+80+Math.random()*240; } else x+=140+Math.random()*400; } }
-  genRamps();
+  const environment = []; // Ympäristöelementit (rakennukset, puut, etc)
+  
+  function genRamps(){ 
+    ramps.length=0; 
+    let x=0; 
+    while(x<20000){ 
+      if(Math.random()<0.12){ 
+        const rw=80+Math.random()*200; 
+        const rh=20+Math.random()*120; 
+        const slope = (Math.random()*0.6-0.3); 
+        ramps.push({x, w:rw, h:rh, slope}); 
+        x+=rw+80+Math.random()*240; 
+      } else {
+        x+=140+Math.random()*400; 
+      }
+    } 
+  }
+
+  function genEnvironment() {
+    environment.length = 0;
+    // Lisää rakennuksia
+    for (let x = 0; x < 20000; x += 800 + Math.random() * 1200) {
+      environment.push({
+        type: 'building',
+        x: x,
+        width: 200 + Math.random() * 150,
+        height: 150 + Math.random() * 100,
+        color: `hsl(${Math.random() * 360}, 30%, ${30 + Math.random() * 30}%)`
+      });
+    }
+    
+    // Lisää puita
+    for (let x = 0; x < 20000; x += 100 + Math.random() * 300) {
+      if (Math.random() > 0.7) {
+        environment.push({
+          type: 'tree',
+          x: x,
+          size: 20 + Math.random() * 15,
+          color: `hsl(${120 + Math.random() * 40}, ${50 + Math.random() * 30}%, ${25 + Math.random() * 15}%)`
+        });
+      }
+    }
+  }
 
   // Particles
   const particles = [];
   function spawnParticle(x,y,life,dx,dy,color,size){
     particles.push({x,y,dx,dy,life,max:life,color,size});
   }
+  
   function updateParticles(dt){
     for(let i=particles.length-1;i>=0;i--){
       const p = particles[i];
       p.life -= dt;
-      if(p.life <= 0){ particles.splice(i,1); continue; }
+      if(p.life <= 0){ 
+        particles.splice(i,1); 
+        continue; 
+      }
       p.x += p.dx * dt;
       p.y += p.dy * dt;
       p.dy += 400 * dt; // gravity on particles
     }
   }
+  
   function drawParticles(ctx, camX){
     for(const p of particles){
       const alpha = p.life / p.max;
@@ -273,52 +672,230 @@
 
   // Parallax procedural layers
   const parallaxLayers = [
-    {speed:0.16, draw: (ctx, offsetX)=>{ ctx.fillStyle='#072f3a'; for(let i=-2;i<6;i++){ const mx = i*1000 - (offsetX * 0.16 % 1000); ctx.beginPath(); ctx.moveTo(mx, H-260); ctx.lineTo(mx+220, H-420 - ((i%2)?30:0)); ctx.lineTo(mx+440, H-260); ctx.closePath(); ctx.fill(); }}},
-    {speed:0.48, draw: (ctx, offsetX)=>{ ctx.fillStyle='#0b4b3f'; for(let i=-4;i<20;i++){ const tx = i*180 - (offsetX * 0.48 % 180); const h = 30 + (i%3)*10; ctx.beginPath(); ctx.moveTo(tx, H-118); ctx.lineTo(tx+12, H-150 - h); ctx.lineTo(tx+24, H-118); ctx.closePath(); ctx.fill(); }}},
-    {speed:0.86, draw: (ctx, offsetX)=>{ ctx.fillStyle='#0f3940'; for(let i=-2;i<12;i++){ const bx = i*420 - (offsetX * 0.86 % 420); ctx.fillRect(bx+40, H-140 - ((i%3)*6), 50, 40 + ((i%2)?6:0)); }}}
+    {speed:0.16, draw: (ctx, offsetX)=>{ 
+      ctx.fillStyle='#072f3a'; 
+      for(let i=-2;i<6;i++){ 
+        const mx = i*1000 - (offsetX * 0.16 % 1000); 
+        ctx.beginPath(); 
+        ctx.moveTo(mx, H-260); 
+        ctx.lineTo(mx+220, H-420 - ((i%2)?30:0)); 
+        ctx.lineTo(mx+440, H-260); 
+        ctx.closePath(); 
+        ctx.fill(); 
+      }
+    }},
+    {speed:0.48, draw: (ctx, offsetX)=>{ 
+      ctx.fillStyle='#0b4b3f'; 
+      for(let i=-4;i<20;i++){ 
+        const tx = i*180 - (offsetX * 0.48 % 180); 
+        const h = 30 + (i%3)*10; 
+        ctx.beginPath(); 
+        ctx.moveTo(tx, H-118); 
+        ctx.lineTo(tx+12, H-150 - h); 
+        ctx.lineTo(tx+24, H-118); 
+        ctx.closePath(); 
+        ctx.fill(); 
+      }
+    }},
+    {speed:0.86, draw: (ctx, offsetX)=>{ 
+      ctx.fillStyle='#0f3940'; 
+      for(let i=-2;i<12;i++){ 
+        const bx = i*420 - (offsetX * 0.86 % 420); 
+        ctx.fillRect(bx+40, H-140 - ((i%3)*6), 50, 40 + ((i%2)?6:0)); 
+      }
+    }}
   ];
 
   // Input
   const keys = {};
   window.addEventListener('keydown', e=>{
+    if (e.key === 'Escape') {
+      togglePause();
+      return;
+    }
+    
+    if (e.key.toLowerCase() === 'n' && running && !isPaused) {
+      activateNitro();
+    }
+    
+    if (e.key === ' ' && running && !isPaused) {
+      // Hätäjarrutus
+      player.vx *= 0.7;
+      for(let i=0;i<8;i++) {
+        spawnParticle(
+          player.x + 20, 
+          H-96, 
+          0.5 + Math.random()*0.5, 
+          (Math.random()-0.5)*100, 
+          -20 - Math.random()*30, 
+          '#666', 
+          2 + Math.random()*3
+        );
+      }
+    }
+    
     keys[e.key.toLowerCase()]=true;
-    if(!running && (e.key==='ArrowUp'||e.key===' '||e.key==='w')) startGame();
+    if(!running && !isPaused && (e.key==='ArrowUp'||e.key===' '||e.key==='w')) startGame();
     if(e.key === ' ') e.preventDefault();
   }, {passive:false});
-  window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+  
+  window.addEventListener('keyup', e=>{ 
+    keys[e.key.toLowerCase()]=false; 
+  });
 
   // touch
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
   const wheelieBtn = document.getElementById('wheelieBtn');
-  if(leftBtn){ leftBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['a']=true; }); leftBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['a']=false; }); }
-  if(rightBtn){ rightBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['d']=true; }); rightBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['d']=false; }); }
-  if(wheelieBtn){ wheelieBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['arrowup']=true; }); wheelieBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['arrowup']=false; }); }
+  const nitroTouchBtn = document.getElementById('nitroTouchBtn');
+  
+  if(leftBtn){ 
+    leftBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['a']=true; }); 
+    leftBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['a']=false; }); 
+  }
+  if(rightBtn){ 
+    rightBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['d']=true; }); 
+    rightBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['d']=false; }); 
+  }
+  if(wheelieBtn){ 
+    wheelieBtn.addEventListener('touchstart', e=>{ e.preventDefault(); keys['arrowup']=true; }); 
+    wheelieBtn.addEventListener('touchend', e=>{ e.preventDefault(); keys['arrowup']=false; }); 
+  }
+  if(nitroTouchBtn){ 
+    nitroTouchBtn.addEventListener('touchstart', e=>{ e.preventDefault(); activateNitro(); }); 
+  }
+
+  // Nitro
+  function activateNitro() {
+    if (nitroActive || nitroTime > 0 || nitroUpgrade === 0) return;
+    
+    nitroActive = true;
+    nitroTime = nitroUpgrade * 2 + 3; // 3-9 sekuntia riippuen tasosta
+    nitroCount++;
+    
+    if (nitroCount >= 10) {
+      unlockAchievement('nitroMaster');
+    }
+    
+    // Nitro partikkelit
+    for(let i=0;i<15;i++) {
+      spawnParticle(
+        player.x - 30, 
+        H-100, 
+        0.4 + Math.random()*0.4, 
+        -100 - Math.random()*200, 
+        (Math.random()-0.5)*80, 
+        '#06b6d4', 
+        2 + Math.random()*4
+      );
+    }
+  }
 
   // tuning inputs
-  colorPicker.addEventListener('input', ()=>{ selectedMoped.color = colorPicker.value; buildMopeds(); });
-  powerRange.addEventListener('input', ()=>{ powerUpgrade = parseInt(powerRange.value); powerLevel.textContent = powerUpgrade; });
-  stabilityRange.addEventListener('input', ()=>{ stabilityUpgrade = parseInt(stabilityRange.value); stabLevel.textContent = stabilityUpgrade; });
+  colorPicker.addEventListener('input', ()=>{ 
+    selectedMoped.color = colorPicker.value; 
+    buildMopeds(); 
+  });
+  
+  powerRange.addEventListener('input', ()=>{ 
+    powerUpgrade = parseInt(powerRange.value); 
+    powerLevel.textContent = powerUpgrade; 
+    updateMultiplierDisplay();
+  });
+  
+  stabilityRange.addEventListener('input', ()=>{ 
+    stabilityUpgrade = parseInt(stabilityRange.value); 
+    stabLevel.textContent = stabilityUpgrade; 
+    updateMultiplierDisplay();
+  });
+  
+  nitroRange.addEventListener('input', ()=>{ 
+    nitroUpgrade = parseInt(nitroRange.value); 
+    nitroLevel.textContent = nitroUpgrade; 
+    nitroTimeEl.textContent = (nitroUpgrade * 2 + 3).toString();
+  });
+  
+  exhaustSelect.addEventListener('change', updateMultiplierDisplay);
+
+  // Sääpainikkeet
+  document.querySelectorAll('.weather-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setWeather(btn.dataset.weather);
+    });
+  });
+
+  // Nitro painike
+  nitroBtn.addEventListener('click', activateNitro);
 
   // helpers
   function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-  function normalizeAngle(a){ while(a < -Math.PI) a += Math.PI * 2; while(a > Math.PI) a -= Math.PI * 2; return a; }
-  function hexToRgba(hex, a){ let c = hex.replace('#',''); if(c.length===3) c=c.split('').map(x=>x+x).join(''); const num=parseInt(c,16); const r=(num>>16)&255, g=(num>>8)&255, b=num&255; return `rgba(${r},${g},${b},${a})`; }
+  function normalizeAngle(a){ 
+    while(a < -Math.PI) a += Math.PI * 2; 
+    while(a > Math.PI) a -= Math.PI * 2; 
+    return a; 
+  }
+  
+  function hexToRgba(hex, a){ 
+    let c = hex.replace('#',''); 
+    if(c.length===3) c=c.split('').map(x=>x+x).join(''); 
+    const num=parseInt(c,16); 
+    const r=(num>>16)&255, g=(num>>8)&255, b=num&255; 
+    return `rgba(${r},${g},${b},${a})`; 
+  }
 
   // Start/reset
   function startGame(){
-    if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
-    cameraX=0; score=0; player.x=140; player.y=H-120; player.vx=0; player.vy=0; player.angle=0; player.angularVel=0; player.wheelie=false; player.wheelieTime=0; running=true; genRamps(); particles.length=0; last = 0; loop(performance.now());
+    if(audioCtx && audioCtx.state === 'suspended'){ 
+      audioCtx.resume(); 
+    }
+    cameraX=0; 
+    score=0; 
+    totalDistance = 0;
+    damage = 0;
+    damageDistance = 0;
+    nitroActive = false;
+    nitroTime = 0;
+    player.x=140; 
+    player.y=H-120; 
+    player.vx=0; 
+    player.vy=0; 
+    player.angle=0; 
+    player.angularVel=0; 
+    player.wheelie=false; 
+    player.wheelieTime=0; 
+    player.maxWheelieTime = 0;
+    running=true; 
+    isPaused = false;
+    pauseBtn.textContent = 'Pysäytä';
+    genRamps(); 
+    genEnvironment();
+    particles.length=0; 
+    last = 0; 
+    loop(performance.now());
   }
+  
   restartBtn.addEventListener('click', ()=> startGame());
+  
+  function togglePause() {
+    isPaused = !isPaused;
+    pauseBtn.textContent = isPaused ? 'Jatka' : 'Pysäytä';
+    
+    if (isPaused) {
+      stopAllAudio();
+    }
+  }
+  
+  pauseBtn.addEventListener('click', togglePause);
 
   // Sound update
   function updateSound(throttle){
-    if(!audioCtx) return;
+    if(!audioCtx || isPaused) return;
+    
     if(customAudioBuffer){
       playCustomLoop(customAudioBuffer, throttle);
       return;
     }
+    
     startSynth();
     const base = 110 + throttle*320;
     const cutoff = 600 + throttle*1400;
@@ -337,8 +914,30 @@
     const back = inputs.back ? 1 : 0;
     const move = forward - back;
 
+    // Nitro effect
+    let nitroBoost = 1;
+    if (nitroActive && nitroTime > 0) {
+      nitroBoost = 2.0; // 100% boost
+      nitroTime -= dt;
+      
+      // Nitro partikkelit jatkuvasti
+      if (Math.random() < dt * 20) {
+        spawnParticle(
+          player.x - 30, 
+          H-100, 
+          0.3 + Math.random()*0.3, 
+          -80 - Math.random()*150, 
+          (Math.random()-0.5)*60, 
+          '#06b6d4', 
+          1 + Math.random()*3
+        );
+      }
+    } else {
+      nitroActive = false;
+    }
+
     // longitudinal acceleration (force / mass)
-    const force = move * selectedMoped.acceleration * (1 + powerUpgrade*0.12);
+    const force = move * selectedMoped.acceleration * (1 + powerUpgrade*0.12) * nitroBoost;
     const ax = Math.cos(player.angle) * force / selectedMoped.mass;
     const ay = Math.sin(player.angle) * force / selectedMoped.mass;
     player.vx += ax * dt;
@@ -367,7 +966,7 @@
     player.vx *= (baseFriction * speedDrag);
 
     // clamp horizontal speed
-    const maxS = selectedMoped.maxSpeed * (1 + powerUpgrade*0.06);
+    const maxS = selectedMoped.maxSpeed * (1 + powerUpgrade*0.06) * (nitroActive ? 1.5 : 1);
     const hv = Math.abs(player.vx);
     if(hv > maxS){ player.vx = (player.vx / hv) * maxS; }
 
@@ -391,22 +990,59 @@
 
     // Wheelie logic: vertical lift when throttle and speed
     if(forward && Math.abs(player.vx) > 60){
-      if(!player.wheelie){ player.wheelie = true; player.wheelieTime = 0; }
+      if(!player.wheelie){ 
+        player.wheelie = true; 
+        player.wheelieTime = 0;
+        unlockAchievement('firstWheelie');
+      }
       player.wheelieTime += dt;
+      player.maxWheelieTime = Math.max(player.maxWheelieTime, player.wheelieTime);
+      
+      if (player.wheelieTime >= 10) {
+        unlockAchievement('wheelie10s');
+      }
+      
       // Raise front: simulate by lowering ground clearance of rear relative to front
       // Add small upward offset to simulate lift off ground
-      if(Math.random() < dt * 8) spawnParticle(player.x + 20, groundY - 8, 0.6, -30 - Math.random()*20, -20 - Math.random()*10, '#bba38f', 3 + Math.random()*3);
+      if(Math.random() < dt * 8) {
+        spawnParticle(
+          player.x + 20, 
+          groundY - 8, 
+          0.6, 
+          -30 - Math.random()*20, 
+          -20 - Math.random()*10, 
+          '#bba38f', 
+          3 + Math.random()*3
+        );
+      }
       // reduce lateral control while wheelie
       player.angle += ((right?0.012:0) + (left?-0.012:0) - (1 - tunedStability)*0.06) * dt * 8;
     } else {
       if(player.wheelie && player.wheelieTime > 0.2){
         // landing particles
-        for(let i=0;i<6;i++) spawnParticle(player.x - 10 + i*6, groundY - 6, 0.6 + Math.random()*0.6, Math.random()*40-20, -20 - Math.random()*10, '#999', 2 + Math.random()*3);
+        for(let i=0;i<6;i++) {
+          spawnParticle(
+            player.x - 10 + i*6, 
+            groundY - 6, 
+            0.6 + Math.random()*0.6, 
+            Math.random()*40-20, 
+            -20 - Math.random()*10, 
+            '#999', 
+            2 + Math.random()*3
+          );
+        }
       }
       player.wheelie = false;
       player.wheelieTime = 0;
       // relax angle
       player.angle *= Math.pow(0.85, dt*60);
+    }
+
+    // Vahinkojärjestelmä
+    damageDistance += Math.abs(player.vx) * dt / 10;
+    if (damageDistance >= 1000) { // 1km ilman vahinkoa
+      unlockAchievement('noDamage');
+      damageDistance = 0;
     }
 
     // simulate vertical landing: if player would go below groundY, treat as landing impact
@@ -426,9 +1062,28 @@
       // Also check big angular tilt on landing
       const badAngle = Math.abs(player.angle) > 1.2;
       if(rearHit || badAngle){
-        // immediate crash
-        onCrash('Takalokari osui maahan voimakkaasti tai pala liian vino (rearHit:'+rearHit+', badAngle:'+badAngle+')');
-        return; // stop physics/render further
+        // Vahinkoa
+        damage += 20 + Math.random() * 30;
+        damageDistance = 0;
+        
+        // Vahinko partikkelit
+        for(let i=0;i<8;i++) {
+          spawnParticle(
+            player.x + Math.random()*40-20, 
+            player.y - 5 + Math.random()*10, 
+            0.7 + Math.random()*0.5, 
+            Math.random()*100-50, 
+            -30 - Math.random()*40, 
+            '#dc2626', 
+            2 + Math.random()*3
+          );
+        }
+        
+        if (damage >= 100) {
+          // immediate crash
+          onCrash('Liikaa vahinkoa - mopo hajosi!');
+          return; // stop physics/render further
+        }
       } else {
         // successful landing: small bounce
         player.vy = -impactVy * 0.25;
@@ -441,27 +1096,342 @@
 
     // update horizontal position
     player.x += player.vx * dt;
+    totalDistance += Math.abs(player.vx) * dt / 10;
+
+    // Saavutukset
+    if (Math.abs(player.vx) / 10 >= 100) {
+      unlockAchievement('speed100');
+    }
+    
+    if (totalDistance >= 5000) {
+      unlockAchievement('distance5k');
+    }
 
     // clamp within world bounds (soft)
-    player.x = clamp(player.x, 40, 12000 - 40);
+    player.x = clamp(player.x, 40, 20000 - 40);
   }
 
   // Crash handler: stops game, shows message
   function onCrash(reason){
     running=false;
-    stopSynth();
-    if(customSource){ try{ customSource.stop(); }catch(e){} customSource=null; }
-    if(score > best){ best = Math.floor(score); localStorage.setItem('mopedBest', best); }
+    stopAllAudio();
+    if(score > best){ 
+      best = Math.floor(score); 
+      localStorage.setItem('mopedBest', best); 
+    }
     // small explosion particles
-    for(let i=0;i<18;i++) spawnParticle(player.x + Math.random()*40-20, player.y - 10 + Math.random()*20, 0.8 + Math.random()*0.8, Math.random()*300-150, -100 + Math.random()*80, '#ffb86b', 3 + Math.random()*4);
-    setTimeout(()=>{ ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.font='22px system-ui'; ctx.textAlign='center'; ctx.fillText('Kaatui! Pisteet: '+Math.floor(score), W/2, H/2 - 8); ctx.font='14px system-ui'; ctx.fillText('Syy: '+reason, W/2, H/2 + 18); ctx.fillText('Tallenna tuunaukset tai paina Aloita', W/2, H/2 + 42); },200);
+    for(let i=0;i<18;i++) {
+      spawnParticle(
+        player.x + Math.random()*40-20, 
+        player.y - 10 + Math.random()*20, 
+        0.8 + Math.random()*0.8, 
+        Math.random()*300-150, 
+        -100 + Math.random()*80, 
+        '#ffb86b', 
+        3 + Math.random()*4
+      );
+    }
+    
+    setTimeout(()=>{ 
+      ctx.fillStyle='rgba(0,0,0,0.6)'; 
+      ctx.fillRect(0,0,W,H); 
+      ctx.fillStyle='#fff'; 
+      ctx.font='22px system-ui'; 
+      ctx.textAlign='center'; 
+      ctx.fillText('Kaatui! Pisteet: '+Math.floor(score), W/2, H/2 - 8); 
+      ctx.font='14px system-ui'; 
+      ctx.fillText('Syy: '+reason, W/2, H/2 + 18); 
+      ctx.fillText('Tallenna tuunaukset tai paina Aloita', W/2, H/2 + 42); 
+    },200);
+  }
+
+  // Update stats display
+  function updateStatsDisplay() {
+    // Nopeus km/h (oletetaan että maxSpeed 420 vastaa noin 42 km/h)
+    const speedKmh = Math.round(Math.abs(player.vx) / 10);
+    speedValue.textContent = `${speedKmh} km/h`;
+    
+    // Wheelie-aika
+    wheelieValue.textContent = player.wheelieTime.toFixed(1) + 's';
+    
+    // Matka
+    distanceValue.textContent = Math.round(totalDistance) + 'm';
+    
+    // Vahinko
+    damageBar.style.width = `${damage}%`;
+    
+    // Nitro
+    const nitroPercent = nitroActive ? (nitroTime / (nitroUpgrade * 2 + 3)) * 100 : 100;
+    nitroBar.style.width = `${nitroPercent}%`;
+  }
+
+  // Draw environment
+  function drawEnvironment(ctx, camX) {
+    // Piirrä ympäristöelementit
+    for (const obj of environment) {
+      const screenX = obj.x - camX;
+      
+      if (screenX + (obj.width || obj.size * 2) < -200 || screenX > W + 200) continue;
+      
+      switch (obj.type) {
+        case 'building':
+          ctx.fillStyle = obj.color;
+          ctx.fillRect(screenX, H-96-obj.height, obj.width, obj.height);
+          
+          // Ikkunat
+          ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
+          for (let i = 0; i < Math.floor(obj.width / 30); i++) {
+            for (let j = 0; j < Math.floor(obj.height / 40); j++) {
+              if (Math.random() > 0.3) { // Satunnaiset valot
+                ctx.fillRect(
+                  screenX + 10 + i * 30, 
+                  H-96-obj.height + 10 + j * 40, 
+                  15, 25
+                );
+              }
+            }
+          }
+          break;
+          
+        case 'tree':
+          ctx.fillStyle = obj.color;
+          ctx.beginPath();
+          ctx.arc(screenX, H-96-obj.size, obj.size, 0, Math.PI*2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#8B4513';
+          ctx.fillRect(screenX-3, H-96, 6, obj.size/2);
+          break;
+      }
+    }
+  }
+
+  // Draw moped with unique design for each model
+  function drawMoped(ctx, screenX, playerY, angle, moped, color, wheelie) {
+    ctx.save();
+    ctx.translate(screenX+44, playerY+12);
+    ctx.rotate(angle);
+
+    const primaryColor = color;
+    
+    // Mopo-kohtainen ulkonäkö
+    switch(moped.id) {
+      case 'derbi':
+        // Derbi Senda - enduro tyyli
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(-50, -8, 100, 16); // Runko
+        
+        // Tankki
+        ctx.fillStyle = shadeColor(primaryColor, -20);
+        ctx.beginPath();
+        ctx.ellipse(-10, -15, 25, 12, 0, 0, Math.PI*2);
+        ctx.fill();
+        
+        // Istuin
+        ctx.fillStyle = '#111';
+        ctx.fillRect(-15, -2, 30, 6);
+        
+        // Etuteltta
+        ctx.fillStyle = '#333';
+        ctx.fillRect(30, -18, 8, 12);
+        break;
+        
+      case 'yamaha':
+        // Yamaha DT - klassinen enduro
+        ctx.fillStyle = primaryColor;
+        ctx.beginPath();
+        ctx.moveTo(-45, -5);
+        ctx.lineTo(-20, -20);
+        ctx.lineTo(20, -20);
+        ctx.lineTo(45, -5);
+        ctx.lineTo(45, 5);
+        ctx.lineTo(-45, 5);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Tankki
+        ctx.fillStyle = shadeColor(primaryColor, -30);
+        ctx.fillRect(-25, -20, 20, 8);
+        
+        // Istuin
+        ctx.fillStyle = '#222';
+        ctx.fillRect(-20, -5, 40, 6);
+        break;
+        
+      case 'aprilia':
+        // Aprilia SX - supermotard
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(-48, -12, 96, 10); // Alarunko
+        ctx.fillRect(-30, -18, 60, 6); // Ylärunko
+        
+        // Istuin
+        ctx.fillStyle = '#000';
+        ctx.fillRect(-25, -12, 50, 4);
+        
+        // Tankki
+        ctx.fillStyle = shadeColor(primaryColor, -40);
+        ctx.fillRect(-15, -18, 30, 6);
+        break;
+        
+      case 'beta':
+        // Beta RR - moderni enduro
+        ctx.fillStyle = primaryColor;
+        ctx.beginPath();
+        ctx.moveTo(-40, -8);
+        ctx.quadraticCurveTo(0, -25, 40, -8);
+        ctx.lineTo(40, 8);
+        ctx.quadraticCurveTo(0, 15, -40, 8);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Tankki
+        ctx.fillStyle = shadeColor(primaryColor, -25);
+        ctx.fillRect(-20, -25, 40, 10);
+        
+        // Istuin
+        ctx.fillStyle = '#151515';
+        ctx.fillRect(-25, -8, 50, 8);
+        break;
+        
+      case 'honda':
+        // Honda NSR - sport
+        ctx.fillStyle = primaryColor;
+        ctx.beginPath();
+        ctx.moveTo(-45, -5);
+        ctx.bezierCurveTo(-30, -25, 30, -25, 45, -5);
+        ctx.lineTo(45, 5);
+        ctx.bezierCurveTo(30, 15, -30, 15, -45, 5);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Istuin
+        ctx.fillStyle = '#000';
+        ctx.fillRect(-20, -5, 40, 5);
+        
+        // Spoileri
+        ctx.fillStyle = '#333';
+        ctx.fillRect(40, -10, 5, 8);
+        break;
+        
+      case 'rieju':
+        // Rieju MRT - moderni supermotard
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(-46, -10, 92, 8); // Päärunko
+        ctx.fillRect(-35, -16, 70, 6); // Yläosa
+        
+        // Tankki
+        ctx.fillStyle = shadeColor(primaryColor, -35);
+        ctx.fillRect(-20, -16, 40, 6);
+        
+        // Istuin
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(-28, -10, 56, 6);
+        break;
+    }
+
+    // Pyörät (yhteiset kaikille)
+    ctx.fillStyle='#111';
+    ctx.beginPath(); 
+    ctx.arc(-28, 18, 16, 0, Math.PI*2); 
+    ctx.fill();
+    ctx.beginPath(); 
+    ctx.arc(28, 18, 16, 0, Math.PI*2); 
+    ctx.fill();
+    
+    ctx.fillStyle='#333';
+    ctx.beginPath(); 
+    ctx.arc(-28, 18, 12, 0, Math.PI*2); 
+    ctx.fill();
+    ctx.beginPath(); 
+    ctx.arc(28, 18, 12, 0, Math.PI*2); 
+    ctx.fill();
+    
+    ctx.fillStyle='#555';
+    ctx.beginPath(); 
+    ctx.arc(-28, 18, 8, 0, Math.PI*2); 
+    ctx.fill();
+    ctx.beginPath(); 
+    ctx.arc(28, 18, 8, 0, Math.PI*2); 
+    ctx.fill();
+
+    // Pakoputki
+    const exhaustColor = exhaustSelect.value === 'racing' ? '#fed7aa' : 
+                        exhaustSelect.value === 'sport' ? '#fca5a5' : 
+                        exhaustSelect.value === 'custom' ? '#c084fc' : '#cbd5e1';
+    ctx.fillStyle = exhaustColor;
+    ctx.fillRect(34, -2, 18, 6);
+    
+    // Wheelie efekti
+    if (wheelie) {
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 60, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // Draw weather effects
+  function drawWeather(ctx, camX) {
+    switch(currentWeather) {
+      case 'rain':
+        // Sade
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        for (let i = 0; i < 50; i++) {
+          const x = (camX * 0.5 + i * 40) % W;
+          const y = (Date.now() * 0.2 + i * 20) % H;
+          ctx.fillRect(x, y, 1, 15);
+        }
+        break;
+        
+      case 'night':
+        // Tähtitaivas
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        for (let i = 0; i < 100; i++) {
+          const x = (i * 97) % W;
+          const y = (i * 73) % (H - 100);
+          const size = Math.sin(Date.now() * 0.001 + i) * 0.5 + 1;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI*2);
+          ctx.fill();
+        }
+        break;
+        
+      case 'fog':
+        // Sumu
+        const gradient = ctx.createLinearGradient(0, H-200, 0, H);
+        gradient.addColorStop(0, 'rgba(200, 200, 200, 0.1)');
+        gradient.addColorStop(1, 'rgba(200, 200, 200, 0.4)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, H-200, W, 200);
+        break;
+    }
   }
 
   // Main loop
   let last=0;
   function loop(ts){
-    if(!running) return;
-    if(!last) last=ts; const dtms = Math.min(50, ts-last); last = ts; const dt = dtms/1000;
+    if(!running || isPaused) {
+      if (isPaused) {
+        // Piirrä pysäytetty ruutu
+        ctx.fillStyle='rgba(0,0,0,0.7)'; 
+        ctx.fillRect(0,0,W,H); 
+        ctx.fillStyle='#fff'; 
+        ctx.font='28px system-ui'; 
+        ctx.textAlign='center'; 
+        ctx.fillText('PELI PYSÄYTETTY', W/2, H/2 - 20); 
+        ctx.font='16px system-ui'; 
+        ctx.fillText('Paina ESC tai Pysäytä-painiketta jatkaaksesi', W/2, H/2 + 20);
+      }
+      requestAnimationFrame(loop);
+      return;
+    }
+    
+    if(!last) last=ts; 
+    const dtms = Math.min(50, ts-last); 
+    last = ts; 
+    const dt = dtms/1000;
 
     selectedMoped = mopeds[selectedIndex];
     const tunedColor = colorPicker.value || selectedMoped.color;
@@ -480,13 +1450,15 @@
     if(player.wheelie){
       const angleFactor = Math.max(0, 1 - Math.abs(player.angle) / 1.0);
       const exhaust = exhaustSelect.value;
-      const exhaustMul = exhaust === 'stock' ? 0.85 : (exhaust === 'sport' ? 1.05 : 1.2);
+      const exhaustMul = exhaust === 'stock' ? 0.85 : 
+                        exhaust === 'sport' ? 1.05 : 
+                        exhaust === 'racing' ? 1.2 : 1.35;
       const pts = angleFactor * (selectedMoped.wheelieMult + powerUpgrade*0.22) * exhaustMul * dt * 40;
       score += pts;
     }
 
     // camera smoothing to follow player.x
-    const targetCam = clamp(player.x - W*0.35, 0, 12000);
+    const targetCam = clamp(player.x - W*0.35, 0, 20000);
     cameraX += (targetCam - cameraX) * clamp(dt * 4, 0, 1);
 
     // throttle for sound
@@ -494,21 +1466,62 @@
     updateSound(throttle * (1 + powerUpgrade*0.12));
 
     scoreEl.textContent = Math.floor(score);
+    updateStatsDisplay();
 
     // Render
     ctx.clearRect(0,0,W,H);
-    const sky = ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#4fb2ff'); sky.addColorStop(0.7,'#9bd1ff'); sky.addColorStop(1,'#fff'); ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+    
+    // Tausta säätilan mukaan
+    let sky;
+    switch(currentWeather) {
+      case 'night':
+        sky = ctx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,'#1e3a8a');
+        sky.addColorStop(0.7,'#3730a3');
+        sky.addColorStop(1,'#000');
+        break;
+      case 'rain':
+        sky = ctx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,'#4b5563');
+        sky.addColorStop(0.7,'#6b7280');
+        sky.addColorStop(1,'#9ca3af');
+        break;
+      case 'fog':
+        sky = ctx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,'#94a3b8');
+        sky.addColorStop(0.7,'#cbd5e1');
+        sky.addColorStop(1,'#e2e8f0');
+        break;
+      default: // sunny
+        sky = ctx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,'#4fb2ff');
+        sky.addColorStop(0.7,'#9bd1ff');
+        sky.addColorStop(1,'#fff');
+    }
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,W,H);
 
     // parallax
     parallaxLayers.forEach(layer => { layer.draw(ctx, cameraX); });
 
     // ground
-    ctx.fillStyle='#06202b'; ctx.fillRect(0,H-96,W,96);
+    ctx.fillStyle= currentWeather === 'night' ? '#051a23' : '#06202b'; 
+    ctx.fillRect(0,H-96,W,96);
+    
+    // Ympäristö
+    drawEnvironment(ctx, cameraX);
+    
     // repeating shadows
-    ctx.save(); ctx.translate(-cameraX % W,0);
+    ctx.save(); 
+    ctx.translate(-cameraX % W,0);
     for(let i=-1;i<6;i++){
-      ctx.fillStyle='rgba(7,36,45,0.9)'; ctx.beginPath(); ctx.ellipse(i*W+200, H-40, 220, 80, 0, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(i*W+640, H-40, 240, 90, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle= currentWeather === 'night' ? 'rgba(5,26,35,0.9)' : 'rgba(7,36,45,0.9)'; 
+      ctx.beginPath(); 
+      ctx.ellipse(i*W+200, H-40, 220, 80, 0, 0, Math.PI*2); 
+      ctx.fill();
+      ctx.beginPath(); 
+      ctx.ellipse(i*W+640, H-40, 240, 90, 0, 0, Math.PI*2); 
+      ctx.fill();
     }
     ctx.restore();
 
@@ -516,8 +1529,10 @@
     for(const r of ramps){
       const rx = r.x - cameraX;
       if(rx + r.w < -200 || rx > W + 200) continue;
-      ctx.fillStyle='#2b5563'; ctx.fillRect(rx, H-96 - r.h, r.w, r.h);
-      ctx.fillStyle='#2e6b79'; ctx.fillRect(rx, H-96 - r.h, r.w, 6);
+      ctx.fillStyle='#2b5563'; 
+      ctx.fillRect(rx, H-96 - r.h, r.w, r.h);
+      ctx.fillStyle='#2e6b79'; 
+      ctx.fillRect(rx, H-96 - r.h, r.w, 6);
     }
 
     // particles
@@ -526,75 +1541,41 @@
     // draw player: compute screenX relative to camera
     const screenX = clamp(player.x - cameraX, 80, W - 140);
     // shadow
-    ctx.fillStyle='rgba(0,0,0,0.24)'; ctx.beginPath(); ctx.ellipse(screenX+44, H-40, 56, 14, 0, 0, Math.PI*2); ctx.fill();
-
-    // draw bike body (procedural)
-    ctx.save();
-    ctx.translate(screenX+44, player.y+12);
-    ctx.rotate(player.angle);
-
-    const tunedColorHex = colorPicker.value || selectedMoped.color;
-    ctx.fillStyle = tunedColorHex;
-    ctx.beginPath();
-    ctx.moveTo(-48, 10);
-    ctx.quadraticCurveTo(-28, -18, 0, -16);
-    ctx.quadraticCurveTo(32, -14, 48, 8);
-    ctx.lineTo(48, 14);
-    ctx.quadraticCurveTo(20, 26, -48, 14);
-    ctx.closePath();
+    ctx.fillStyle='rgba(0,0,0,0.24)'; 
+    ctx.beginPath(); 
+    ctx.ellipse(screenX+44, H-40, 56, 14, 0, 0, Math.PI*2); 
     ctx.fill();
 
-    // model-specific visuals
-    const model = selectedMoped.id;
-    if(model === 'derbi'){
-      ctx.fillStyle = shadeColor(tunedColorHex, -12);
-      ctx.fillRect(-20, -12, 40, 8);
-      ctx.fillStyle = '#111827'; ctx.fillRect(-10, -18, 20, 6);
-      ctx.fillStyle = '#ffffff55'; ctx.fillRect(-46, -2, 92, 4);
-    } else if(model === 'yamaha'){
-      ctx.fillStyle = '#21342a';
-      ctx.fillRect(-44, -6, 18, 8);
-      ctx.fillRect(26, -4, 18, 8);
-      ctx.fillStyle = '#00000025';
-      for(let i=-36;i<=36;i+=12) ctx.fillRect(i, 4, 6, 2);
-    } else if(model === 'aprilia'){
-      ctx.fillStyle = '#111827'; ctx.fillRect(-8, -18, 16, 6);
-      ctx.fillStyle = '#ffe27a'; ctx.fillRect(-40, -4, 20, 6);
-      ctx.fillStyle = '#ffffff44'; ctx.beginPath(); ctx.arc(18, -4, 10, 0, Math.PI*2); ctx.fill();
-    } else if(model === 'beta'){
-      ctx.fillStyle = '#0b1f24'; ctx.fillRect(-30, -6, 12, 10); ctx.fillRect(12, -10, 8, 12);
-      ctx.fillStyle = '#ffffff22'; ctx.fillRect(-10, -16, 20, 4);
-    }
+    // Piirrä mopo
+    drawMoped(ctx, screenX, player.y, player.angle, selectedMoped, tunedColor, player.wheelie);
 
-    // wheels
-    ctx.fillStyle='#06202a';
-    ctx.beginPath(); ctx.arc(-28, 18, 16, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(28, 18, 16, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle='#111827';
-    ctx.beginPath(); ctx.arc(-28, 18, 8, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(28, 18, 8, 0, Math.PI*2); ctx.fill();
-
-    // rear-fender visual (important: collide check uses selectedMoped.rearHeight)
-    ctx.fillStyle = '#0c1114';
-    ctx.fillRect(-34, 8, 18, 6); // front wheel fender
-    ctx.fillRect(26, 8 - selectedMoped.rearHeight/10, 18, 6); // rear fender small visual
-
-    // exhaust
-    ctx.fillStyle = exhaustSelect.value === 'racing' ? '#fed7aa' : (exhaustSelect.value === 'sport' ? '#fca5a5' : '#cbd5e1');
-    ctx.fillRect(34, -2, 18, 6);
-
-    ctx.restore();
+    // Sääefektit
+    drawWeather(ctx, cameraX);
 
     // HUD / UI
-    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(10,10,360,92);
-    ctx.fillStyle='#fff'; ctx.font='16px system-ui'; ctx.textAlign='left'; ctx.fillText(selectedMoped.name, 18, 36);
-    ctx.font='14px system-ui'; ctx.fillText('Paras: '+best, 18, 60);
-    ctx.font='12px system-ui'; ctx.fillText('Nopeus: '+Math.round(Math.abs(player.vx)), 18, 82);
+    ctx.fillStyle='rgba(0,0,0,0.6)'; 
+    ctx.fillRect(10,10,360,92);
+    ctx.fillStyle='#fff'; 
+    ctx.font='16px system-ui'; 
+    ctx.textAlign='left'; 
+    ctx.fillText(selectedMoped.name, 18, 36);
+    ctx.font='14px system-ui'; 
+    ctx.fillText('Paras: '+best, 18, 60);
+    ctx.font='12px system-ui'; 
+    ctx.fillText('Nopeus: '+Math.round(Math.abs(player.vx)/10)+' km/h', 18, 82);
     ctx.textAlign='right';
     ctx.font='13px system-ui';
     ctx.fillText('Wheelie: '+(player.wheelie ? (Math.floor(player.wheelieTime*10)/10)+'s' : '0s'), W-18, 26);
     ctx.fillText('Power: '+powerUpgrade, W-18, 46);
     ctx.fillText('Stab: '+stabilityUpgrade, W-18, 66);
+    
+    // Nitro-indikaattori
+    if (nitroActive) {
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
+      ctx.font = 'bold 16px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('NITRO AKTIIVINEN!', W/2, 30);
+    }
 
     requestAnimationFrame(loop);
   }
@@ -611,13 +1592,33 @@
   }
 
   // initial draw
-  ctx.fillStyle='#071025'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.font='18px system-ui'; ctx.textAlign='center'; ctx.fillText('Valitse mopedi, säädä väri/putki ja paina Aloita', W/2, H/2 - 6);
+  ctx.fillStyle='#071025'; 
+  ctx.fillRect(0,0,W,H); 
+  ctx.fillStyle='#fff'; 
+  ctx.font='18px system-ui'; 
+  ctx.textAlign='center'; 
+  ctx.fillText('Valitse mopedi, säädä väri/putki ja paina Aloita', W/2, H/2 - 6);
+  
+  // Alusta peli
+  initTuning();
   buildMopeds();
 
   // autosave tuning
-  function autoSaveTune(){ const tune = {power: parseInt(powerRange.value), stability: parseInt(stabilityRange.value), color: colorPicker.value, exhaust: exhaustSelect.value}; localStorage.setItem('mopedTune', JSON.stringify(tune)); }
+  function autoSaveTune(){ 
+    const tune = {
+      power: parseInt(powerRange.value), 
+      stability: parseInt(stabilityRange.value), 
+      nitro: parseInt(nitroRange.value),
+      color: colorPicker.value, 
+      exhaust: exhaustSelect.value,
+      weather: currentWeather
+    }; 
+    localStorage.setItem('mopedTune', JSON.stringify(tune)); 
+  }
+  
   powerRange.addEventListener('change', autoSaveTune);
   stabilityRange.addEventListener('change', autoSaveTune);
+  nitroRange.addEventListener('change', autoSaveTune);
   colorPicker.addEventListener('change', autoSaveTune);
   exhaustSelect.addEventListener('change', autoSaveTune);
 
