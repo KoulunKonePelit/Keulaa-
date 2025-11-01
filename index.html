@@ -1,16 +1,15 @@
 <!doctype html>
 <html lang="fi">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>KEULAA! — Mopokeula V3 (Kaupunki-ilta)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KEULAA! — Yamaha DT (Real Wheelie Physics)</title>
 <style>
 :root{
   --bg:#071026; --card:#061423; --accent:#ffb86b; --muted:#bcd6e8;
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
 }
 html,body{height:100%;margin:0;background:var(--bg);color:#eaf6ff}
-.center{display:flex;align-items:center;justify-content:center}
 .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px}
 .card{width:1100px;max-width:96vw;background:linear-gradient(180deg,var(--card),#021018);border-radius:12px;padding:12px;box-shadow:0 18px 60px rgba(0,0,0,0.6)}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -29,26 +28,24 @@ canvas{width:100%;height:640px;border-radius:10px;display:block;background:linea
 .balance .dot{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:14px;height:16px;border-radius:6px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,0.3)}
 .footer{margin-top:8px;color:var(--muted);font-size:13px}
 .modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
-.panel{width:820px;max-width:94vw;background:linear-gradient(180deg,#071827,#05202a);padding:16px;border-radius:12px;color:#e6f6ff}
+.panel{width:860px;max-width:94vw;background:linear-gradient(180deg,#071827,#05202a);padding:16px;border-radius:12px;color:#e6f6ff}
 .row{display:flex;gap:8px;align-items:center}
-.bikeOption{background:#021427;padding:10px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.bikeOption.selected{outline:3px solid rgba(255,184,107,0.12)}
-table.leader{width:100%;border-collapse:collapse;margin-top:8px}
-table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:left;font-size:14px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)}
 .icon{font-size:18px;margin-right:6px}
 .center-block{text-align:center}
 @media(max-width:900px){canvas{height:520px}}
 </style>
 </head>
 <body>
-  <div class="wrap center">
+  <div class="wrap">
     <div class="card">
       <header>
-        <h1><span style="font-size:22px">🏁</span><span style="font-weight:900"> KEULAA!</span><span style="font-size:13px;color:var(--muted);margin-left:8px">— Mopokeula V3 (Kaupunki-ilta)</span></h1>
+        <h1>🏁 <strong>KEULAA!</strong> <span style="font-size:13px;color:var(--muted);margin-left:8px">— Yamaha DT Edition (Real wheelie physics)</span></h1>
         <div class="menu">
-          <button id="btnStart" class="btn"><span class="icon">▶️</span>Aloita peli</button>
-          <button id="btnGarage" class="ghost"><span class="icon">🔧</span>Garage</button>
-          <button id="btnScores" class="ghost"><span class="icon">🏆</span>Tulostaulu</button>
+          <button id="btnStart" class="btn"><img src="assets/icon_play.png" width="18" alt=""> Aloita</button>
+          <button id="btnGarage" class="ghost"><img src="assets/icon_garage.png" width="18" alt=""> Garage</button>
+          <button id="btnScores" class="ghost"><img src="assets/icon_tulostaulu.png" width="18" alt=""> Tulostaulu</button>
           <button id="btnQuit" class="ghost"><span class="icon">🚪</span>Ulos</button>
         </div>
       </header>
@@ -58,24 +55,13 @@ table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,25
       <div class="hud">
         <div class="small">Mopo:
           <select id="quickBike" class="select">
-            <option value="derbi">Derbi Senda</option>
             <option value="yamaha">Yamaha DT</option>
-            <option value="aprilia">Aprilia SX</option>
-            <option value="beta">Beta RR</option>
           </select>
         </div>
 
         <div class="small">Nimi: <input id="bikeName" type="text" placeholder="Anna mopon nimi" style="background:#021427;border:1px solid rgba(255,255,255,0.03);color:#e6f6ff;padding:6px;border-radius:6px"></div>
 
-        <div class="small">Väri (vain Garage): <input id="color" type="color" value="#ffb86b"></div>
-
-        <div class="small">Putki:
-          <select id="exhaust" class="select">
-            <option value="stock">Stock</option>
-            <option value="sport">Sport</option>
-            <option value="racing">Racing</option>
-          </select>
-        </div>
+        <div class="small">Väri (vain Garage): <input id="color" type="color" value="#1e88ff"></div>
 
         <div style="display:flex;flex-direction:column">
           <div class="small">Keula</div>
@@ -83,16 +69,16 @@ table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,25
         </div>
 
         <div style="display:flex;flex-direction:column">
-          <div class="small">Tasapaino</div>
+          <div class="small">Tasapaino (← / →)</div>
           <div class="balance"><div class="mid"></div><div id="balDot" class="dot"></div></div>
         </div>
 
         <div class="small">Pisteet: <strong id="score">0</strong></div>
         <div class="small">Paras: <strong id="best">0</strong></div>
-        <div class="small" style="margin-left:auto">Boost: <strong>N</strong></div>
+        <div class="small" style="margin-left:auto">Kaasu: <strong>D</strong> • Jarru: <strong>A</strong></div>
       </div>
 
-      <div class="footer">Ohjeet: ↑ = kaasu/keula, ←/A ja →/D = tasapaino, N = boost. Taka-lokari osuu maahan → kaatuminen. Väri näkyy vain Garage-ikkunassa.</div>
+      <div class="footer small">Ohjeet: D = kaasu, A = jarru (ei peruuta), ← / → = tasapaino. Liiallinen kaasu nostaa keulan. Taka-lokari osuu maahan → kaatuminen.</div>
     </div>
   </div>
 
@@ -100,35 +86,20 @@ table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,25
   <div id="garage" class="modal" role="dialog" aria-hidden="true">
     <div class="panel">
       <h2>Garage 🔧</h2>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
-        <div class="bikeOption" data-key="derbi"><strong>Derbi Senda</strong><div class="small">Kevyt, ketterä</div></div>
-        <div class="bikeOption" data-key="yamaha"><strong>Yamaha DT</strong><div class="small">Tasapainoinen</div></div>
-        <div class="bikeOption" data-key="aprilia"><strong>Aprilia SX</strong><div class="small">Voimakas, haastava</div></div>
-        <div class="bikeOption" data-key="beta"><strong>Beta RR</strong><div class="small">Vakaa, helppo</div></div>
-      </div>
-
-      <div class="row" style="margin-top:12px">
+      <div style="display:flex;gap:12px;align-items:center">
         <div style="flex:1">
-          <label class="small">Nimi mopolle:</label><br/>
-          <input id="garageName" type="text" value="" style="width:100%;padding:8px;border-radius:8px;background:#021427;border:1px solid rgba(255,255,255,0.03);color:#e6f6ff" />
+          <label class="small">Mopon nimi:</label><br/><input id="garageName" type="text" style="width:100%;padding:8px;border-radius:8px;background:#021427;border:1px solid rgba(255,255,255,0.03);color:#e6f6ff"/>
         </div>
         <div style="width:160px">
-          <label class="small">Väri (näkyy vain täällä):</label><br/>
-          <input id="garageColor" type="color" value="#ffb86b" />
-        </div>
-        <div style="flex:1">
-          <label class="small">Inertia-tweak (liukuvuus):</label><br/>
-          <input id="inertiaRange" type="range" min="0.6" max="1.6" step="0.01" value="1.0" style="width:100%" />
+          <label class="small">Väri (näkyy vain täällä):</label><br/><input id="garageColor" type="color" value="#1e88ff"/>
         </div>
       </div>
-
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
         <button id="saveGarage" class="btn">Tallenna</button>
         <button id="closeGarage" class="ghost">Peruuta</button>
       </div>
-
       <div style="margin-top:12px">
-        <h4 class="small">Esikatselu (vain Garage):</h4>
+        <h4 class="small">Esikatselu:</h4>
         <canvas id="garagePreview" width="760" height="120" style="border-radius:8px;background:linear-gradient(180deg,#071025,#071827);display:block"></canvas>
       </div>
     </div>
@@ -138,23 +109,8 @@ table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,25
   <div id="scores" class="modal" role="dialog" aria-hidden="true">
     <div class="panel">
       <h2>🏆 Tulostaulu</h2>
-      <p class="small">Paikallisesti tallennetut parhaat tulokset. Nimi näkyy (mopon nimi), väri näkyy vain Garagessa.</p>
-      <div style="display:flex;gap:12px;align-items:flex-start;">
-        <div style="flex:1">
-          <h3 class="small">Parhaat</h3>
-          <table class="leader" id="leaderTable">
-            <thead><tr><th>#</th><th>Nimi</th><th>Pisteet</th><th>Päivä</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div style="width:260px">
-          <h3 class="small">Omat tulokset</h3>
-          <table class="leader" id="myTable">
-            <thead><tr><th>#</th><th>Pisteet</th><th>Päivä</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+      <p class="small">Paikallisesti tallennetut parhaat tulokset (localStorage).</p>
+      <table class="table" id="leaderTable"><thead><tr><th>#</th><th>Nimi</th><th>Pisteet</th><th>Päivä</th></tr></thead><tbody></tbody></table>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
         <button id="clearScores" class="ghost">Tyhjennä</button>
         <button id="closeScores" class="btn">Sulje</button>
@@ -163,48 +119,67 @@ table.leader th, table.leader td{padding:8px;border-bottom:1px solid rgba(255,25
   </div>
 
 <script>
-/* KEULAA! V3 — Kaupunki-ilta (yhteen tiedostoon)
-   - Mopon nimi näkyy pelissä ja tulostaulussa
-   - Mopon väri näkyy vain Garagessa / esikatselussa
-   - Paikallinen leaderboard (localStorage)
-   - Parannettu fysiikka + jousitus, boost (N), WebAudio synth
+/* KEULAA! — Yamaha DT Edition (Realistic 2D wheelie physics)
+   - Käyttää assets/mopo_dt.png, assets/renkaat.png, assets/tausta_city.png, assets/tie.png, assets/savu.png
+   - D = kaasu, A = jarru (ei reverse), ←/→ = tasapaino
+   - Realistinen-ish RPM, torque, weight-transfer, suspension, crash detection
 */
 
-/* ---------- Config ---------- */
+/* ---------- Config & Helpers ---------- */
 const CONFIG = {
-  accelResponsiveness: 0.085,
-  drag: 0.007,
-  angularDamping: 0.86,
-  maxAngle: Math.PI/2,
-  crashAngle: 1.45,
-  boostForce: 1.8,
-  boostDuration: 0.9,
-  boostCooldown: 2.2
+  dtScale: 1/16,           // time step smoothing
+  maxSpeed: 6.2,           // px per frame scale (felt in worldX)
+  drag: 0.0055,
+  brakeForce: 0.22,
+  gravity: 9.81,           // used for weight transfer scale (conceptual)
+  mass: 85,                // rider + bike mass (kg) approx for scaling
+  wheelbase: 1.3,          // meters (for weight transfer lever)
+  cgHeight: 0.45,          // center of gravity height (m)
+  torqueFactor: 0.9,
+  torqueToAngular: 0.018,  // converts engine torque to angular acceleration
+  angularDamping: 0.88,
+  maxAngleRad: Math.PI/2,  // 90 deg
+  crashAngleRad: 1.57,     // ~90 deg (but we'll also check rear contact)
+  rpmIdle: 1000,
+  rpmMax: 10000,
+  rpmAccelRate: 2200,      // rpm/s when throttle
+  rpmDecay: 900,           // rpm/s when no throttle
+  wheelieThresholdSpeed: 2.8, // above this speed torque can lift front
+  scoringFactor: 55
 };
 
-/* ---------- DOM ---------- */
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function now(){ return performance.now(); }
+
+/* ---------- DOM & Canvas ---------- */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
+
+let W = canvas.width, H = canvas.height;
+function resizeCanvas(){
+  const card = document.querySelector('.card');
+  const rect = card.getBoundingClientRect();
+  W = canvas.width = Math.max(800, Math.floor(rect.width - 24));
+  H = canvas.height = 640;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 const btnStart = document.getElementById('btnStart');
 const btnGarage = document.getElementById('btnGarage');
 const btnScores = document.getElementById('btnScores');
 const btnQuit = document.getElementById('btnQuit');
+
 const quickBike = document.getElementById('quickBike');
 const bikeName = document.getElementById('bikeName');
 const colorInput = document.getElementById('color');
-const exhaustSel = document.getElementById('exhaust');
 const wheelFill = document.getElementById('wheelFill');
 const balDot = document.getElementById('balDot');
 const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
-const comboEl = document.getElementById('combo');
 
 const garageModal = document.getElementById('garage');
-const bikeOptions = document.querySelectorAll('.bikeOption');
 const garageColor = document.getElementById('garageColor');
-const inertiaRange = document.getElementById('inertiaRange');
 const garageName = document.getElementById('garageName');
 const saveGarage = document.getElementById('saveGarage');
 const closeGarage = document.getElementById('closeGarage');
@@ -212,116 +187,63 @@ const garagePreview = document.getElementById('garagePreview');
 
 const scoresModal = document.getElementById('scores');
 const leaderTableBody = document.querySelector('#leaderTable tbody');
-const myTableBody = document.querySelector('#myTable tbody');
 const closeScores = document.getElementById('closeScores');
 const clearScores = document.getElementById('clearScores');
 
 let best = parseInt(localStorage.getItem('keula_best_v3') || '0');
 bestEl.textContent = best;
 
-/* ---------- Bikes ---------- */
-const bikes = {
-  derbi:  {name:'Derbi Senda', speed:3.6, stability:0.86, wheelMult:1.05, color:'#ffb86b', inertia:0.88},
-  yamaha: {name:'Yamaha DT',  speed:4.1, stability:0.78, wheelMult:1.22, color:'#ffd67a', inertia:1.05},
-  aprilia:{name:'Aprilia SX', speed:4.8, stability:0.70, wheelMult:1.42, color:'#ff6f6f', inertia:1.28},
-  beta:   {name:'Beta RR',    speed:3.9, stability:0.92, wheelMult:0.98, color:'#f7a36b', inertia:0.78}
+/* ---------- Load assets ---------- */
+const ASSETS = {};
+const ASSET_LIST = {
+  bg: 'assets/tausta_city.png',
+  tie: 'assets/tie.png',
+  bike: 'assets/mopo_dt.png',
+  wheel: 'assets/renkaat.png',
+  smoke: 'assets/savu.png',
+  icon_play: 'assets/icon_play.png'
 };
-
-let selectedKey = quickBike.value;
-let selected = bikes[selectedKey];
-colorInput.value = selected.color;
-
-/* load saved garage */
-(function loadGarage(){
-  const g = JSON.parse(localStorage.getItem('keula_garage') || '{}');
-  if(g.key && bikes[g.key]){ selectedKey = g.key; quickBike.value = selectedKey; selected = bikes[selectedKey]; }
-  if(g.color) { selected.color = g.color; colorInput.value = g.color; garageColor.value = g.color; }
-  if(g.name) { bikeName.value = g.name; garageName.value = g.name; }
-  if(g.inertia) { selected.inertia = g.inertia; inertiaRange.value = g.inertia; }
-})();
+let loaded = 0;
+Object.keys(ASSET_LIST).forEach(k=>{
+  const img = new Image();
+  img.src = ASSET_LIST[k];
+  img.onload = ()=>{ ASSETS[k]=img; loaded++; };
+  img.onerror = ()=>{ console.warn('Asset load error', ASSET_LIST[k]); loaded++; };
+});
 
 /* ---------- Input ---------- */
 const keys = {};
-window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if(!running && (e.key==='ArrowUp' || e.key===' ' || e.key==='w')) start(); });
-window.addEventListener('keyup',   e => { keys[e.key.toLowerCase()] = false; });
+window.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; if(!running && e.key.toLowerCase()==='d') start(); });
+window.addEventListener('keyup',   e=>{ keys[e.key.toLowerCase()] = false; });
 
 /* ---------- Game state ---------- */
 const groundY = H - 110;
 const centerX = Math.round(W*0.47);
 let worldX = 0;
 
-const player = { x: centerX, y: groundY - 56, vx:0, angle:0, angularVel:0, wheelie:false, wheelTime:0 };
-const MAX_ANGLE = CONFIG.maxAngle;
-const CRASH_ANGLE = CONFIG.crashAngle;
+const player = {
+  x: centerX,
+  y: groundY - 56,
+  vx: 0,            // speed along road
+  angle: 0,         // rad (0 = level), positive = wheelie up
+  angularVel: 0,
+  rpm: CONFIG.rpmIdle,
+  throttle: 0,      // 0..1
+  frontSusp: 0,
+  rearSusp: 0,
+  wheelRot: 0
+};
 
 let running = false;
 let score = 0;
-let combo = 0;
-let comboTimer = 0;
-
 let segments = [];
-function genSegments(){
-  segments = []; let x=0;
-  while(x<15000){
-    if(Math.random() < 0.12){ const w=80+Math.random()*220; const h=10+Math.random()*90; segments.push({x,w,h}); x += w + 80 + Math.random()*140; }
-    else x += 120 + Math.random()*260;
-  }
-}
+function genSegments(){ segments = []; let x=0; while(x<15000){ if(Math.random()<0.12){ const w=80+Math.random()*220; const h=10+Math.random()*90; segments.push({x,w,h}); x+=w+80+Math.random()*140;} else x += 120+Math.random()*260; } }
 genSegments();
 
-/* particles */
 const particles = [];
 function spawnParticle(x,y,vx,vy,life,scale,color){ particles.push({x,y,vx,vy,life,age:0,scale,color}); }
 
-/* WebAudio */
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-const audioCtx = AudioCtx ? new AudioCtx() : null;
-let engine = null;
-function startEngine(){
-  if(!audioCtx || engine) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  const f = audioCtx.createBiquadFilter();
-  o.type='sawtooth'; f.type='lowpass'; f.frequency.value = 650; g.gain.value = 0;
-  o.connect(f); f.connect(g); g.connect(audioCtx.destination);
-  o.start();
-  engine = {osc:o,gain:g,filter:f};
-}
-function stopEngine(){
-  if(!audioCtx || !engine) return;
-  try{ engine.osc.stop(); }catch(e){}
-  engine.osc.disconnect(); engine.filter.disconnect(); engine.gain.disconnect();
-  engine = null;
-}
-function updateEngine(throttle, wheel){
-  if(!audioCtx) return;
-  startEngine();
-  const baseFreq = 90 + throttle*520 + (wheel?60:0);
-  const cutoff = 360 + throttle*2000;
-  engine.osc.frequency.setTargetAtTime(baseFreq, audioCtx.currentTime, 0.015);
-  engine.filter.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.03);
-  engine.gain.gain.setTargetAtTime(0.014 + throttle*0.2, audioCtx.currentTime, 0.02);
-}
-function playCrashSound(){
-  if(!audioCtx) return;
-  const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-  o.type='square'; o.frequency.value = 110; o.connect(g); g.connect(audioCtx.destination);
-  g.gain.value = 0.001; o.start();
-  g.gain.exponentialRampToValueAtTime(0.6, audioCtx.currentTime + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-  o.stop(audioCtx.currentTime + 0.7);
-}
-
-/* rear fender Y (approx) and crash */
-function rearFenderY(angle){
-  const pivotY = player.y + 14;
-  const offset = Math.sin(angle) * 32;
-  const curve = Math.pow(angle / (Math.PI/2), 5) * 52;
-  return pivotY + offset + curve * 0.7;
-}
-function checkCrash(){ const ry = rearFenderY(player.angle); if(ry >= groundY - 2) return true; if(player.angle >= CRASH_ANGLE) return true; return false; }
-
-/* ---------- Local leaderboard ---------- */
+/* ---------- Leaderboard (local) ---------- */
 const LB_KEY = 'keula_leaderboard_v3';
 function loadLeaderboard(){ return JSON.parse(localStorage.getItem(LB_KEY) || '[]'); }
 function saveLeaderboard(list){ localStorage.setItem(LB_KEY, JSON.stringify(list)); }
@@ -331,363 +253,353 @@ function addScoreToLeaderboard(name, pts){
   list.sort((a,b)=>b.pts - a.pts);
   saveLeaderboard(list.slice(0,200));
 }
-function clearLeaderboard(){ saveLeaderboard([]); }
 
-/* ---------- UI: modals ---------- */
-btnGarage.addEventListener('click', ()=> { garageModal.style.display='flex'; garageModal.setAttribute('aria-hidden','false'); drawGaragePreview(); });
-closeGarage.addEventListener('click', ()=> { garageModal.style.display='none'; garageModal.setAttribute('aria-hidden','true'); });
-btnScores.addEventListener('click', ()=> { refreshLeaderTables(); scoresModal.style.display='flex'; scoresModal.setAttribute('aria-hidden','false'); });
-closeScores.addEventListener('click', ()=> { scoresModal.style.display='none'; scoresModal.setAttribute('aria-hidden','true'); });
-clearScores.addEventListener('click', ()=>{ if(confirm('Poistetaanko kaikki paikalliset tulokset?')){ clearLeaderboard(); refreshLeaderTables(); alert('Tulostaulu tyhjennetty.'); } });
-
-btnQuit.addEventListener('click', ()=> { if(confirm('Suljetaanko peli (sivu sulkeutuu jos selain sallii)?')){ window.close(); } });
-
-/* Garage selection handlers */
-bikeOptions.forEach(el=> el.addEventListener('click', (e)=>{
-  bikeOptions.forEach(x=> x.classList.remove('selected'));
-  e.currentTarget.classList.add('selected');
-  const key = e.currentTarget.getAttribute('data-key');
-  quickBike.value = key; selectedKey = key; selected = bikes[selectedKey];
-  garageColor.value = selected.color;
-  inertiaRange.value = selected.inertia;
-  garageName.value = bikeName.value || '';
-  drawGaragePreview();
-}));
-
+/* ---------- Garage UI ---------- */
+btnGarage.addEventListener('click', ()=>{ garageModal.style.display='flex'; garageModal.setAttribute('aria-hidden','false'); drawGaragePreview(); });
+closeGarage.addEventListener('click', ()=>{ garageModal.style.display='none'; garageModal.setAttribute('aria-hidden','true'); });
 saveGarage.addEventListener('click', ()=>{
-  selectedKey = quickBike.value; selected = bikes[selectedKey];
-  selected.color = garageColor.value || selected.color;
   bikeName.value = garageName.value || bikeName.value;
-  selected.inertia = parseFloat(inertiaRange.value) || selected.inertia;
-  localStorage.setItem('keula_garage', JSON.stringify({ key: selectedKey, color: selected.color, name: (bikeName.value||''), inertia: selected.inertia }));
-  garageModal.style.display='none'; garageModal.setAttribute('aria-hidden','true');
+  colorInput.value = garageColor.value || colorInput.value;
+  localStorage.setItem('keula_garage', JSON.stringify({ name: bikeName.value, color: colorInput.value }));
+  garageModal.style.display='none';
   alert('Garage tallennettu.');
 });
 
-/* Garage preview rendering (color visible only here) */
+/* load garage */
+(function loadGarage(){
+  const g = JSON.parse(localStorage.getItem('keula_garage') || '{}');
+  if(g.name) bikeName.value = g.name;
+  if(g.color) { colorInput.value = g.color; garageColor.value = g.color; }
+})();
+
 function drawGaragePreview(){
   const gctx = garagePreview.getContext('2d');
   gctx.clearRect(0,0,garagePreview.width,garagePreview.height);
-  // background simple city dusk
-  const gw = garagePreview.width, gh = garagePreview.height;
-  const sky = gctx.createLinearGradient(0,0,0,gh);
-  sky.addColorStop(0,'#ffb878'); sky.addColorStop(1,'#1b2330');
-  gctx.fillStyle = sky; gctx.fillRect(0,0,gw,gh);
-  // bike drawn center-left
-  const px = 120, py = gh/2 + 10;
-  const col = garageColor.value || selected.color;
-  // wheels
-  gctx.fillStyle = '#061018'; gctx.beginPath(); gctx.arc(px-24, py+18, 16, 0, Math.PI*2); gctx.fill();
-  gctx.beginPath(); gctx.arc(px+36, py+18, 16, 0, Math.PI*2); gctx.fill();
-  // body (colored)
-  gctx.fillStyle = col; gctx.fillRect(px-32, py-10, 68, 20);
-  gctx.fillStyle = '#06202a'; gctx.fillRect(px-6, py-20, 24, 6);
-  // name
-  gctx.fillStyle = '#fff'; gctx.font='12px system-ui'; gctx.textAlign='left';
-  gctx.fillText('Nimi: ' + (garageName.value || bikeName.value || selected.name), px+80, py-6);
-  gctx.fillText('Inertia: ' + (selected.inertia||'1.00').toFixed(2), px+80, py+8);
+  const col = garageColor.value || colorInput.value;
+  // simple preview using bike sprite tinted
+  gctx.fillStyle = '#071025'; gctx.fillRect(0,0,garagePreview.width,garagePreview.height);
+  const bike = ASSETS.bike;
+  if(bike){ gctx.drawImage(bike, 10, 8, 200, 96); }
+  gctx.fillStyle = '#fff'; gctx.font='12px system-ui'; gctx.fillText('Nimi: ' + (garageName.value || bikeName.value || 'Yamaha DT'), 220, 30);
 }
 
-/* ---------- Gameplay: boosts, audio, start/loop ---------- */
-let boostAvailable = true, boosting = false, boostTimer = 0, boostCooldownTimer = 0;
-window.addEventListener('keydown', e => {
-  if(e.key.toLowerCase() === 'n' && boostAvailable && running){
-    boosting = true; boostTimer = CONFIG.boostDuration; boostAvailable = false; boostCooldownTimer = CONFIG.boostCooldown;
-    for(let i=0;i<18;i++) spawnParticle(player.x - 6 + Math.random()*10, player.y + 8 + Math.random()*6, -Math.random()*0.8 - 0.2, -0.6 + Math.random()*0.4, 0.8 + Math.random()*0.8, 0.6 + Math.random()*0.6, 'rgba(255,200,80,0.9)');
-  }
-});
+/* ---------- Sound (simple engine synth) ---------- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = AudioCtx ? new AudioCtx() : null;
+let engineNode = null;
+function startEngineAudio(){
+  if(!audioCtx || engineNode) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
+  o.type = 'sawtooth'; f.type='lowpass'; f.frequency.value = 800;
+  o.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  g.gain.value = 0;
+  o.start();
+  engineNode = {osc:o, gain:g, filter:f};
+}
+function stopEngineAudio(){ if(!audioCtx || !engineNode) return; try{ engineNode.osc.stop(); }catch(e){} engineNode = null; }
+function updateEngineAudio(){
+  if(!audioCtx) return;
+  startEngineAudio();
+  const t = player.throttle;
+  const rpmNorm = (player.rpm - CONFIG.rpmIdle) / (CONFIG.rpmMax - CONFIG.rpmIdle);
+  const baseFreq = 120 + rpmNorm * 800;
+  engineNode.osc.frequency.setTargetAtTime(baseFreq, audioCtx.currentTime, 0.02);
+  engineNode.filter.frequency.setTargetAtTime(400 + rpmNorm * 3000, audioCtx.currentTime, 0.03);
+  engineNode.gain.gain.setTargetAtTime(0.002 + t * 0.08 + rpmNorm * 0.05, audioCtx.currentTime, 0.02);
+}
 
-/* near-miss beep */
-function nearMissBeep(){ if(!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sine'; o.frequency.value=720; o.connect(g); g.connect(audioCtx.destination); g.gain.value=0.001; o.start(); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.12); o.stop(audioCtx.currentTime+0.14); }
+/* ---------- Physics helpers ---------- */
+function torqueCurve(rpm){
+  // simple torque curve: peak around 6500 rpm
+  const x = clamp((rpm - 1000) / (8000), 0, 1);
+  // curve: low at idle, peak at 0.6, then slowly down
+  return 18 + 42 * Math.exp(-Math.pow((x - 0.6)/0.32,2)); // Nm (scaled-ish)
+}
 
-let shakeTime = 0, nearMissFlash = 0;
+/* rear fender Y calc for crash */
+function rearFenderY(angle, rearSusp){
+  const pivotY = player.y + 14 + rearSusp*6;
+  const offset = Math.sin(angle) * 32;
+  const curve = Math.pow(angle / (Math.PI/2), 5) * 52;
+  return pivotY + offset + curve * 0.7;
+}
+function checkCrash(){ const ry = rearFenderY(player.angle, player.rearSusp); if(ry >= groundY - 2) return true; if(player.angle >= CONFIG.crashAngleRad) return true; return false; }
+
+/* ---------- Game start / crash ---------- */
 let last = 0;
-
-/* start game */
 function start(){
-  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  running = true; last = performance.now();
-  worldX = 0; score = 0; combo = 0; comboTimer = 0;
-  player.vx = 0; player.angle = 0; player.angularVel = 0; player.wheelie = false; player.wheelTime = 0;
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+  running = true;
+  last = performance.now();
+  worldX = 0; score = 0;
+  player.vx = 0; player.angle = 0; player.angularVel = 0;
+  player.rpm = CONFIG.rpmIdle; player.throttle = 0;
+  player.frontSusp = 0; player.rearSusp = 0; player.wheelRot = 0;
   genSegments();
-  boostAvailable = true; boosting = false; boostTimer = 0; boostCooldownTimer = 0;
   requestAnimationFrame(loop);
 }
 btnStart.addEventListener('click', ()=> start());
 
-/* crash & game over */
 function doCrash(){
-  running = false; stopEngine(); playCrashSound();
+  running = false;
+  stopEngineAudio();
+  // save best
   if(Math.floor(score) > best){ best = Math.floor(score); localStorage.setItem('keula_best_v3', best); bestEl.textContent = best; }
-  setTimeout(()=> {
-    // ask to save
+  setTimeout(()=>{
     const name = (bikeName.value && bikeName.value.trim()) || 'Anonyymi';
     if(confirm('Kaatuit! Pisteesi: ' + Math.floor(score) + '\nLisätäänkö tulos tulostauluun nimellä "'+name+'"?')){
       addScoreToLeaderboard(name, score);
     }
-    // show overlay with options
     drawGameOverOverlay();
-  }, 220);
+  }, 200);
 }
 
-/* draw Game Over overlay with buttons */
 function drawGameOverOverlay(){
   ctx.fillStyle = 'rgba(0,0,0,0.64)'; ctx.fillRect(0,0,W,H);
   ctx.fillStyle = '#fff'; ctx.font='28px system-ui'; ctx.textAlign='center';
   ctx.fillText('KAATUI! Pisteet: ' + Math.floor(score), W/2, H/2 - 14);
-  ctx.font = '16px system-ui'; ctx.fillText('Paina "Uudestaan" tai "Takaisin valikkoon".', W/2, H/2 + 12);
-  // draw buttons (canvas only for visuals) — actual actions via DOM below
-  // Create simple DOM buttons overlay
   createGameOverButtons();
 }
 let gameOverButtonsCreated = false;
 function createGameOverButtons(){
   if(gameOverButtonsCreated) return;
   const restartBtn = document.createElement('button'); restartBtn.textContent = 'Uudestaan'; restartBtn.className='btn';
-  restartBtn.style.position='fixed'; restartBtn.style.left='50%'; restartBtn.style.transform='translateX(-130px)'; restartBtn.style.top='66%';
-  restartBtn.style.zIndex='60';
+  restartBtn.style.position='fixed'; restartBtn.style.left='50%'; restartBtn.style.transform='translateX(-130px)'; restartBtn.style.top='66%'; restartBtn.style.zIndex='60';
   const menuBtn = document.createElement('button'); menuBtn.textContent='Takaisin valikkoon'; menuBtn.className='ghost';
   menuBtn.style.position='fixed'; menuBtn.style.left='50%'; menuBtn.style.transform='translateX(10px)'; menuBtn.style.top='66%'; menuBtn.style.zIndex='60';
   document.body.appendChild(restartBtn); document.body.appendChild(menuBtn);
   restartBtn.addEventListener('click', ()=> { removeGameOverButtons(); start(); });
-  menuBtn.addEventListener('click', ()=> { removeGameOverButtons(); running=false; stopEngine(); /* return to menu */ });
+  menuBtn.addEventListener('click', ()=> { removeGameOverButtons(); running=false; stopEngineAudio(); });
   gameOverButtonsCreated = true;
 }
 function removeGameOverButtons(){
   const nodes = Array.from(document.querySelectorAll('button'));
   nodes.forEach(n=>{
-    if(n.textContent === 'Uudestaan' || n.textContent === 'Takaisin valikkoon' || n.textContent === 'Takaisin valikkoon'){
+    if(n.textContent === 'Uudestaan' || n.textContent === 'Takaisin valikkoon'){
       try{ n.remove(); }catch(e){}
     }
   });
   gameOverButtonsCreated = false;
 }
 
-/* ---------- Main loop ---------- */
+/* ---------- Main loop (physics + render) ---------- */
 function loop(ts){
   if(!running) return;
-  const dt = Math.min(40, ts - last); last = ts; const s = dt/1000;
+  const dtMs = Math.min(40, ts - last); last = ts; const s = dtMs / 1000;
 
-  const left = keys['arrowleft'] || keys['a'];
-  const right = keys['arrowright'] || keys['d'];
-  const up = keys['arrowup'] || keys['w'] || keys[' '];
+  // inputs
+  const gas = keys['d'] ? 1 : 0;
+  const brake = keys['a'] ? 1 : 0;
+  const left = keys['arrowleft'] ? 1 : 0;
+  const right = keys['arrowright'] ? 1 : 0;
 
-  selectedKey = quickBike.value;
-  selected = bikes[selectedKey];
+  // RPM update (simple)
+  if(gas){
+    player.throttle = clamp(player.throttle + 4.5 * s, 0, 1);
+    player.rpm += CONFIG.rpmAccelRate * player.throttle * s;
+  } else {
+    player.throttle = clamp(player.throttle - 3.6 * s, 0, 1);
+    player.rpm -= CONFIG.rpmDecay * s;
+  }
+  player.rpm = clamp(player.rpm, CONFIG.rpmIdle, CONFIG.rpmMax);
 
-  // target speed and boost
-  let targetSpeed = 0;
-  if(right) targetSpeed = selected.speed * 1.0;
-  if(left) targetSpeed = -selected.speed * 0.38;
-  if(boosting){ targetSpeed *= CONFIG.boostForce; boostTimer -= s; if(boostTimer <= 0) boosting = false; }
-  player.vx += (targetSpeed - player.vx) * CONFIG.accelResponsiveness;
+  // engine torque (Nm) and effective forward force
+  const engTorque = torqueCurve(player.rpm) * player.throttle * CONFIG.torqueFactor; // Nm
+  // translate torque -> force along wheel (approx): torque / wheel radius
+  const wheelRadius = 0.33; // meters - conceptual scaling
+  const driveForce = engTorque / wheelRadius; // N (conceptual)
+  // convert to acceleration in px/s^2 scale: a = F/m, map to game scale
+  const accelM = (driveForce / CONFIG.mass) * 9.8; // multiply to get bigger game effect
+  // map to pixels/frame effect (tuned)
+  const accelGame = accelM * 0.06; // tuning constant
+
+  // braking
+  if(brake){
+    player.vx = Math.max(0, player.vx - CONFIG.brakeForce);
+  }
+
+  // smooth speed update
+  let targetV = player.vx + accelGame * s * 60; // scaled
+  player.vx += (targetV - player.vx) * 0.12; // responsiveness
   player.vx *= (1 - CONFIG.drag);
+  player.vx = clamp(player.vx, 0, CONFIG.maxSpeed);
 
-  if(!boostAvailable){ boostCooldownTimer -= s; if(boostCooldownTimer <= 0) boostAvailable = true; }
+  // world scroll
+  worldX += player.vx * (dtMs / 16);
 
-  worldX += player.vx * (dt / 16);
+  // weight transfer: a_longitudinal (approx)
+  const a_long = accelGame; // conceptual
+  // weight transfer factor: W * a * h / wheelbase
+  const weightTransfer = clamp((CONFIG.mass * a_long * CONFIG.cgHeight) / CONFIG.wheelbase, -CONFIG.mass*5, CONFIG.mass*5);
+  // normal forces approximate (not exact physics but believable)
+  const normalRear = (CONFIG.mass * 9.8) * 0.5 + weightTransfer * 0.5;
+  const normalFront = (CONFIG.mass * 9.8) * 0.5 - weightTransfer * 0.5;
 
-  // wheelie dynamics with inertia
-  if(up && player.vx > 0.6){
-    if(!player.wheelie){ player.wheelie = true; player.wheelTime = 0; }
-    player.wheelTime += s;
-    const baseTorque = 0.048;
-    const control = ((keys['d']||keys['arrowright'])? 0.018 : 0) + ((keys['a']||keys['arrowleft'])? -0.018 : 0);
-    const damping = (1 - selected.stability) * 0.058;
-    const torque = baseTorque + control - damping;
-    player.angularVel += torque / selected.inertia * (dt/16);
-    player.angle += player.angularVel * (dt/16);
-    player.angle = Math.min(player.angle, MAX_ANGLE + 0.05);
+  // wheelie torque: engine torque tends to rotate bike up, front normal produces restoring torque
+  const torqueUp = engTorque * CONFIG.torqueToAngular; // scaled to angular acceleration
+  const restore = normalFront * 0.0009 * CONFIG.cgHeight; // proportional restoring
+  // apply angular acceleration
+  player.angularVel += (torqueUp - restore) * (dtMs / 16) / (1 + 0.6 * (player.throttle)); // throttle affects inertia slightly
 
-    // scoring
+  // steering balance
+  if(right) player.angularVel += 0.016;
+  if(left) player.angularVel -= 0.016;
+
+  // damping and angle update
+  player.angularVel *= CONFIG.angularDamping;
+  player.angle += player.angularVel * (dtMs / 16);
+  player.angle = clamp(player.angle, 0, CONFIG.maxAngleRad + 0.06);
+
+  // suspension simple reaction to road bumps (procedural)
+  const roadBump = Math.sin(worldX * 0.012) * 0.5;
+  player.frontSusp += ((-player.frontSusp) * 5 + roadBump * 0.6) * s;
+  player.rearSusp += ((-player.rearSusp) * 5 + Math.sin(worldX * 0.008) * 0.4) * s;
+
+  // wheel rotation visual
+  player.wheelRot += player.vx * 0.14;
+
+  // particles (smoke) when rpm high & throttle
+  if(player.throttle > 0.45 && player.rpm > CONFIG.rpmIdle + (CONFIG.rpmMax - CONFIG.rpmIdle) * 0.35){
+    if(Math.random() < 0.35) spawnParticle(player.x+200, player.y+30 + Math.random()*6, -0.8 - Math.random()*0.5, -0.3 - Math.random()*0.6, 0.8 + Math.random()*0.6, 0.6 + Math.random()*0.4, 'rgba(210,210,210,0.85)');
+  }
+
+  // particles update
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i]; p.age += s;
+    if(p.age > p.life) { particles.splice(i,1); continue; }
+    p.x += p.vx * 60 * s; p.y += p.vy * 60 * s; p.vx *= 0.99; p.vy += 0.06;
+  }
+
+  // crash check
+  if(checkCrash()){ doCrash(); return; }
+
+  // scoring: reward smooth wheelies at medium-high speed and near ideal angle
+  if(player.angle > 0.12 && player.angle < 1.1){
     const ideal = 0.6;
     const diff = Math.abs(player.angle - ideal);
     const angFactor = Math.max(0, 1 - diff / 1.4);
-    const ex = exhaustSel.value;
-    const exMul = ex === 'stock' ? 0.9 : (ex==='sport'?1.05:1.15);
-    const pts = angFactor * selected.wheelMult * exMul * s * 55;
+    const pts = angFactor * (player.vx / CONFIG.maxSpeed + 0.3) * CONFIG.scoringFactor * s;
     score += pts;
-    if(angFactor > 0.62){ combo += pts * 0.5; comboTimer = 2.6; }
-
-    // suspension-like effect on particles
-    if(Math.random() < 0.45) spawnParticle(player.x - 12 + (Math.random()*8-4), player.y + 6 + Math.random()*6, -player.vx*0.14 + (Math.random()*0.3-0.15), -0.36 + Math.random()*0.18, 0.9 + Math.random()*0.8, 0.6 + Math.random()*0.6, 'rgba(215,215,215,0.75)');
-  } else {
-    // recovery / suspension damping
-    player.wheelie = false;
-    player.angularVel *= CONFIG.angularDamping;
-    player.angle += player.angularVel * (dt/16);
-    player.angularVel += (-player.angle * 0.045) / selected.inertia * (dt/16);
-    comboTimer -= s;
-    if(comboTimer <= 0) combo = Math.max(0, combo * 0.6);
   }
 
-  // manual adjust while wheelie
-  if(player.wheelie){
-    if(left) player.angularVel -= 0.012 * (dt/16);
-    if(right) player.angularVel += 0.012 * (dt/16);
-  }
-
-  player.angularVel = clamp(player.angularVel, -0.8, 2.2);
-  const throttle = clamp(Math.abs(player.vx)/6,0,1);
-  updateEngine(throttle, player.wheelie);
-
-  // particles physics
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i]; p.age += s;
-    if(p.age > p.life){ particles.splice(i,1); continue; }
-    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.986; p.vy += 0.02;
-  }
-
-  // near-miss
-  if(player.angle > CRASH_ANGLE - 0.12 && player.angle < CRASH_ANGLE){ if(nearMissFlash < 0.6){ nearMissBeep(); nearMissFlash = 0.9; } }
-  nearMissFlash = Math.max(0, nearMissFlash - s*1.6);
-
-  // crash check
-  if(checkCrash()){
-    shakeTime = 0.62;
-    doCrash(); return;
-  }
+  // update audio
+  updateEngineAudio();
 
   // HUD updates
   scoreEl.textContent = Math.floor(score);
-  comboEl.textContent = Math.floor(combo);
-  wheelFill.style.width = clamp((player.angle / MAX_ANGLE) * 100, 0, 100) + '%';
-  const balNorm = clamp((player.angle - 0.6) / (MAX_ANGLE - 0.6), -1, 1);
-  const px = 50 + balNorm * 50; balDot.style.left = px + 'px';
+  wheelFill.style.width = clamp((player.angle / CONFIG.maxAngleRad) * 100, 0, 100) + '%';
+  const balNorm = clamp((player.angle - 0.6) / (CONFIG.maxAngleRad - 0.6), -1, 1);
+  balDot.style.left = (50 + balNorm * 50) + 'px';
 
-  // RENDER (Kaupunki-ilta theme)
+  /* -------------------- RENDER -------------------- */
   ctx.clearRect(0,0,W,H);
 
-  // sky dusk
-  const sky = ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#FFB878'); sky.addColorStop(0.45,'#ff9e5a'); sky.addColorStop(0.9,'#17202a');
-  ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
-
-  // far skyline silhouettes (parallax)
-  const p1 = Math.floor((worldX * 0.05) % (W*2));
-  ctx.fillStyle = '#14202a';
-  for(let i=-1;i<5;i++){
-    ctx.fillRect(i*420 + p1 - 60, H-280, 240, 120);
-  }
-
-  // street lamps
-  const lampShift = Math.floor((worldX * 0.28) % 300);
-  for(let i=-2;i<10;i++){
-    const lx = i*150 - lampShift + 40;
-    if(lx > -100 && lx < W+100){
-      ctx.fillStyle = '#0f1b20'; ctx.fillRect(lx, H-240, 6, 120);
-      // lamp glow
-      ctx.beginPath();
-      const gradient = ctx.createRadialGradient(lx+3, H-240, 0, lx+3, H-240, 48);
-      gradient.addColorStop(0,'rgba(255,210,150,0.28)'); gradient.addColorStop(1,'rgba(255,210,150,0)');
-      ctx.fillStyle = gradient; ctx.arc(lx+3, H-240, 48, 0, Math.PI*2); ctx.fill();
-    }
+  // background parallax
+  const bg = ASSETS.bg;
+  if(bg){
+    const bx = -((worldX * 0.02) % bg.width);
+    ctx.drawImage(bg, bx, 0, bg.width, H);
+    ctx.drawImage(bg, bx + bg.width, 0, bg.width, H);
+  } else {
+    const sky = ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#FFB878'); sky.addColorStop(0.45,'#ff9e5a'); sky.addColorStop(0.9,'#17202a');
+    ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
   }
 
   // road
-  ctx.fillStyle = '#071721'; ctx.fillRect(0, groundY, W, H-groundY);
+  const tie = ASSETS.tie;
+  if(tie){
+    for(let x = -((worldX * 0.5) % tie.width); x < W; x += tie.width){
+      ctx.drawImage(tie, x, H-128, tie.width, 128);
+    }
+  } else {
+    ctx.fillStyle = '#071721'; ctx.fillRect(0, groundY, W, H-groundY);
+  }
 
-  // stripes
-  const stripeShift = Math.floor((worldX*3.2) % 80);
-  for(let sx=-80;sx<W+80;sx+=80){ ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(sx - stripeShift + 10, groundY + 36, 48, 6); }
-
-  // segments (ramps)
+  // ramps / segments
   for(const seg of segments){
     const rx = Math.round(seg.x - worldX);
-    if(rx > -400 && rx < W + 400){ ctx.fillStyle = '#2f7077'; ctx.fillRect(rx, groundY - seg.h, seg.w, seg.h); ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.fillRect(rx + 8, groundY - seg.h + 6, seg.w - 16, 6); }
+    if(rx > -400 && rx < W + 400){
+      ctx.fillStyle = '#2f7077';
+      ctx.fillRect(rx, groundY - seg.h, seg.w, seg.h);
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.fillRect(rx + 8, groundY - seg.h + 6, seg.w - 16, 6);
+    }
   }
 
   // particles (smoke)
   for(const p of particles){
-    const t = p.age / p.life; const alpha = 1 - t;
-    const base = p.color.replace(/[\d\.]+\)$/ , `${alpha})`);
-    ctx.fillStyle = base;
-    ctx.beginPath(); ctx.ellipse(p.x, p.y, 6 * p.scale * (1 - t), 4 * p.scale * (1 - t), 0, 0, Math.PI*2); ctx.fill();
+    const t = p.age / p.life; const alpha = Math.max(0, 1 - t);
+    ctx.fillStyle = 'rgba(210,210,210,'+ (alpha*0.9) +')';
+    ctx.beginPath(); ctx.ellipse(p.x, p.y, 8 * p.scale * (1 - t), 5 * p.scale * (1 - t), 0, 0, Math.PI*2); ctx.fill();
   }
 
-  // screen shake
-  let shakeX = 0, shakeY = 0;
-  if(shakeTime > 0){ shakeX = (Math.random()-0.5) * 8; shakeY = (Math.random()-0.5) * 6; shakeTime -= s; }
+  // screen shake optional (on crash, not implemented here)
 
-  ctx.save(); ctx.translate(shakeX, shakeY);
+  ctx.save();
 
-  // draw player (center)
-  ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+  // draw player with suspension offset (front susp applied as small translate)
+  ctx.translate(player.x, player.y + player.frontSusp * 6);
+  ctx.rotate(player.angle);
 
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(44, (groundY - player.y) + 28, 60, 14, 0, 0, Math.PI*2); ctx.fill();
+  // shadow under bike
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(44, (groundY - (player.y + player.rearSusp)) + 28, 62, 14, 0, 0, Math.PI*2);
+  ctx.fill();
 
   // rear fender
-  ctx.fillStyle = '#232b2f'; ctx.fillRect(-46, 8, 34, 8);
+  ctx.fillStyle = '#232b2f';
+  ctx.fillRect(-46 + player.rearSusp*0.5, 8, 34, 8);
 
-  // wheels (with simple suspension bounce: small y offset)
-  const wheelBounce = Math.sin(worldX * 0.03) * 0.8;
-  ctx.fillStyle = '#07121a'; ctx.beginPath(); ctx.arc(-28, 22 + wheelBounce, 17, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(36, 22 + wheelBounce, 17, 0, Math.PI*2); ctx.fill();
-
-  // body silhouette - NOTE: color NOT used in gameplay per request (garage only)
-  const gameplayColor = '#cbd5e1'; // neutral chrome-ish
-  ctx.fillStyle = gameplayColor;
-  if(selectedKey === 'derbi'){
-    ctx.fillRect(-32, -10, 68, 20);
-    ctx.beginPath(); ctx.moveTo(22,-8); ctx.lineTo(40,-18); ctx.lineTo(18,-18); ctx.fill();
-    ctx.fillStyle = '#07202a'; ctx.fillRect(-6,-18,24,6);
-  } else if(selectedKey === 'yamaha'){
-    ctx.beginPath(); ctx.moveTo(-36,2); ctx.lineTo(-6,-14); ctx.lineTo(30,-14); ctx.lineTo(38,2); ctx.lineTo(10,12); ctx.lineTo(-36,12); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#07202a'; ctx.fillRect(-8,-20,26,6);
-  } else if(selectedKey === 'aprilia'){
-    ctx.fillRect(-26,-12,72,24); ctx.fillStyle = '#07202a'; ctx.fillRect(8,-28,32,12); ctx.fillStyle = gameplayColor; ctx.fillRect(-6,-30,12,8);
+  // wheels drawn with rotation
+  const wheel = ASSETS.wheel;
+  const wheelBounceFront = Math.sin(worldX * 0.03) * 0.6 + player.frontSusp * 6;
+  const wheelBounceRear = Math.sin(worldX * 0.03 + 1.1) * 0.5 + player.rearSusp * 6;
+  // rear
+  if(wheel){
+    ctx.save(); ctx.translate(-28, 22 + wheelBounceRear); ctx.rotate(player.wheelRot); ctx.drawImage(wheel, -32, -32, 64, 64); ctx.restore();
+    // front
+    ctx.save(); ctx.translate(36, 22 + wheelBounceFront); ctx.rotate(player.wheelRot); ctx.drawImage(wheel, -32, -32, 64, 64); ctx.restore();
   } else {
-    ctx.beginPath(); ctx.ellipse(6,-4,60,20,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#07202a'; ctx.fillRect(-12,-20,34,10);
+    ctx.fillStyle = '#07121a'; ctx.beginPath(); ctx.arc(-28,22,17,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(36,22,17,0,Math.PI*2); ctx.fill();
   }
 
-  // name label visible in game
-  ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.font='12px system-ui'; ctx.textAlign='center';
-  ctx.fillText((bikeName.value || selected.name), 6, -4);
+  // bike body sprite
+  const bike = ASSETS.bike;
+  if(bike){
+    ctx.drawImage(bike, -128, -64, 256, 128);
+  } else {
+    // fallback shape
+    ctx.fillStyle = '#cbd5e1'; ctx.fillRect(-32,-10,68,20);
+  }
 
-  // exhaust hint
-  ctx.fillStyle = exhaustSel.value === 'racing' ? '#ffd8b5' : (exhaustSel.value === 'sport' ? '#fca5a5' : '#cbd5e1');
-  ctx.fillRect(38, -4, 12, 6);
+  // exhaust hint / small smoke drawn near exhaust if high rpm
+  if(player.throttle > 0.45 && player.rpm > CONFIG.rpmIdle + (CONFIG.rpmMax - CONFIG.rpmIdle)*0.35){
+    const s = ASSETS.smoke;
+    if(s) ctx.drawImage(s, 38, -6, 80, 36);
+  }
 
-  ctx.restore(); // player
-  ctx.restore(); // shake
-
-  // rear fender indicator (warning)
-  const rearY = rearFenderY(player.angle);
-  ctx.fillStyle = (rearY >= groundY - 10) ? 'rgba(255,60,60,0.95)' : 'rgba(255,255,255,0.06)';
-  ctx.beginPath(); ctx.arc(player.x - 28, rearY + 12, 6, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
 
   // HUD panel
-  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(8,8,480,120);
+  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(8,8,540,120);
   ctx.fillStyle = '#fff'; ctx.font='16px system-ui'; ctx.textAlign='left';
-  ctx.fillText(`${selected.name} — vx:${(player.vx).toFixed(2)}`, 14, 36);
+  ctx.fillText(`${"Yamaha DT"} — vx:${(player.vx).toFixed(2)} m/s`, 14, 36);
   ctx.font='14px system-ui'; ctx.fillText(`Pisteet: ${Math.floor(score)}`, 14, 64);
-  ctx.fillText(`Kulma: ${(player.angle * 180 / Math.PI).toFixed(0)}°`, 14, 88);
-  ctx.fillText(`Inertia: ${selected.inertia.toFixed(2)}`, 14, 112);
-
-  // boost indicator
-  ctx.fillStyle = boostAvailable ? 'rgba(200,255,190,0.9)' : 'rgba(255,180,180,0.9)';
-  ctx.fillRect(500, 14, 120, 14);
-  ctx.fillStyle = '#012'; ctx.font='12px system-ui'; ctx.fillText(boostAvailable ? 'Boost valmis (N)' : 'Boost latautuu', 506, 26);
+  ctx.fillText(`Kulma: ${(player.angle * 180 / Math.PI).toFixed(0)}°`, 14, 92);
+  ctx.fillText(`RPM: ${Math.floor(player.rpm)}`, 200, 92);
 
   requestAnimationFrame(loop);
 }
 
-/* ---------- Helpers ---------- */
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+/* ---------- UI: leaderboard/modal handlers ---------- */
+btnScores.addEventListener('click', ()=>{ refreshLeaderTable(); scoresModal.style.display='flex'; scoresModal.setAttribute('aria-hidden','false'); });
+closeScores.addEventListener('click', ()=>{ scoresModal.style.display='none'; scoresModal.setAttribute('aria-hidden','true'); });
+clearScores.addEventListener('click', ()=>{ if(confirm('Poistetaanko kaikki paikalliset tulokset?')){ saveLeaderboard([]); refreshLeaderTable(); alert('Tulostaulu tyhjennetty.'); } });
 
-/* initial hint */
-ctx.fillStyle = '#071025'; ctx.fillRect(0,0,W,H);
-ctx.fillStyle = '#fff'; ctx.font='18px system-ui'; ctx.textAlign='center';
-ctx.fillText('Valitse mopo, nimi ja avaa Garage (säätöjä). Paina "Aloita peli".', W/2, H/2 - 6);
-
-/* Start with arrow or button */
-window.addEventListener('keydown', e => { if(!running && (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd')) start(); });
-
-/* Fill garage preview initially */
-drawGaragePreview();
-
-/* Refresh leader tables when opening modal */
-function refreshLeaderTables(){
+function refreshLeaderTable(){
   const list = loadLeaderboard();
   leaderTableBody.innerHTML = '';
   for(let i=0;i<Math.min(10,list.length);i++){
@@ -696,30 +608,25 @@ function refreshLeaderTables(){
     tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${r.pts}</td><td>${new Date(r.date).toLocaleString()}</td>`;
     leaderTableBody.appendChild(tr);
   }
-  myTableBody.innerHTML = '';
-  const myName = (bikeName.value && bikeName.value.trim()) || 'Anonyymi';
-  const my = list.filter(x=> (x.name||'').toLowerCase() === myName.toLowerCase());
-  for(let i=0;i<Math.min(10,my.length);i++){
-    const r = my[i];
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td><td>${r.pts}</td><td>${new Date(r.date).toLocaleString()}</td>`;
-    myTableBody.appendChild(tr);
-  }
 }
+
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* Save garage on unload */
+/* initial canvas hint */
+ctx.fillStyle = '#071025'; ctx.fillRect(0,0,W,H);
+ctx.fillStyle = '#fff'; ctx.font='18px system-ui'; ctx.textAlign='center';
+ctx.fillText('Valitse Aloita tai paina D aloittaaksesi. Garage: väri / nimi.', W/2, H/2 - 6);
+
+/* start on D press */
+window.addEventListener('keydown', e=>{ if(!running && e.key.toLowerCase()==='d') start(); });
+
+/* save garage on unload */
 window.addEventListener('beforeunload', ()=> {
-  localStorage.setItem('keula_garage', JSON.stringify({ key: selectedKey, color: selected.color, name: (bikeName.value||''), inertia: selected.inertia }));
+  localStorage.setItem('keula_garage', JSON.stringify({ name: bikeName.value || '', color: colorInput.value }));
 });
 
-/* Ensure garage preview updates when color/name/inertia change */
-garageColor.addEventListener('input', ()=> drawGaragePreview());
-garageName.addEventListener('input', ()=> drawGaragePreview());
-inertiaRange.addEventListener('input', ()=> drawGaragePreview());
-
-/* Initial leaderboard refresh */
-refreshLeaderTables();
+/* initial refresh */
+refreshLeaderTable();
 
 </script>
 </body>
